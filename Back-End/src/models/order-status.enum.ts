@@ -1,8 +1,8 @@
 export enum OrderStatus {
-    ORDERED = 'ORDERED',
-    ACCEPTED = 'ACCEPTED',
-    IN_KITCHEN = 'IN_KITCHEN',
+    PENDING = 'PENDING',
+    IN_PROGRESS = 'IN_PROGRESS',
+    DONE = 'DONE',
+    DELIVERED = 'DELIVERED',
+    DELETED = 'DELETED',
     IN_TRANSIT = 'IN_TRANSIT',
-    FAILED = 'FAILED',
-    RECEIVED = 'RECEIVED',
 }

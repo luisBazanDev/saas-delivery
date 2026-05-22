@@ -1,4 +1,10 @@
 import { Sequelize } from 'sequelize';
+import dotenv from 'dotenv'
+
+dotenv.config()
+
+console.log('Connecting to database...')
+console.log(`DB_HOST: ${process.env.DB_NAME}`)
 
 export const sequelize = new Sequelize(
     process.env.DB_NAME || 'saas_delivery',

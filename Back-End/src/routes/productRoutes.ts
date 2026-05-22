@@ -7,13 +7,14 @@ import {
   deleteProduct,
 } from '../controllers/productController'
 import { authMiddleware } from '../middleware/authMiddleware'
+import { requireRole } from '../middleware/requireRole'
 
 const router = Router()
 
-router.get('/', authMiddleware, listProducts)
-router.post('/', authMiddleware, createProduct)
-router.get('/:id', authMiddleware, getProduct)
-router.put('/:id', authMiddleware, updateProduct)
-router.delete('/:id', authMiddleware, deleteProduct)
+router.get('/', authMiddleware, requireRole('STORE_ADMIN'), listProducts)
+router.post('/', authMiddleware, requireRole('STORE_ADMIN'), createProduct)
+router.get('/:id', authMiddleware, requireRole('STORE_ADMIN'), getProduct)
+router.put('/:id', authMiddleware, requireRole('STORE_ADMIN'), updateProduct)
+router.delete('/:id', authMiddleware, requireRole('STORE_ADMIN'), deleteProduct)
 
 export default router

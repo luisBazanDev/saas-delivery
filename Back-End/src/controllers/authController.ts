@@ -3,8 +3,13 @@ import { User } from '../models/user.model'
 import argon2 from 'argon2'
 import jwt from 'jsonwebtoken'
 import fs from 'fs'
+import path from 'path'
+import { fileURLToPath } from 'url'
 
-const privateKey = fs.readFileSync('../private/private.key', 'utf-8')
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+const privateKey = fs.readFileSync(path.join(__dirname, '../../private/private.pem'), 'utf-8')
 
 export async function register(req: Request, res: Response) {
   const { username, password } = req.body as { username: string; password: string }
@@ -17,10 +22,10 @@ export async function register(req: Request, res: Response) {
 
   const hash = await argon2.hash(password)
 
-  const user = await User.create({ username, password: hash, role: 'STORE_MANAGER' as any })
-  const token = jwt.sign({ sub: user.id, username: user.username }, privateKey, { algorithm: 'RS256', expiresIn: '1h' })
+  const user = await User.create({ username, password: hash, role: 'ADMIN' as any })
+  const token = jwt.sign({ sub: user.id, username: user.username, role: user.role }, privateKey, { algorithm: 'RS256', expiresIn: '1h' })
 
-  res.status(201).json({ id: user.id, username: user.username, token })
+  res.status(201).json({ id: user.id, username: user.username, role: user.role, token })
 }
 
 export async function login(req: Request, res: Response) {
@@ -36,6 +41,6 @@ export async function login(req: Request, res: Response) {
   if (!ok)
     return res.status(401).json({ error: 'invalid credentials' })
 
-  const token = jwt.sign({ sub: user.id, username: user.username }, privateKey, { algorithm: 'RS256', expiresIn: '1h' })
+  const token = jwt.sign({ sub: user.id, username: user.username, role: user.role }, privateKey, { algorithm: 'RS256', expiresIn: '1h' })
   res.json({ bearerToken: token })
 }

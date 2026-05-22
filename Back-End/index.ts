@@ -6,6 +6,7 @@ import authRoutes from './src/routes/authRoutes'
 import productRoutes from './src/routes/productRoutes'
 import categoryRoutes from './src/routes/categoryRoutes'
 import storeRoutes from './src/routes/storeRoutes'
+import adminRoutes from './src/routes/adminRoutes'
 import { requestLogger } from './src/middleware/requestLogger'
 import { errorHandler } from './src/middleware/errorHandler'
 
@@ -25,6 +26,7 @@ app.use('/api/auth', authRoutes)
 app.use('/api/products', productRoutes)
 app.use('/api/categories', categoryRoutes)
 app.use('/api/stores', storeRoutes)
+app.use('/api', adminRoutes)
 
 app.use(errorHandler)
 

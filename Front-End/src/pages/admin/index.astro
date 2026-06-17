@@ -1,0 +1,11 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import ProtectedRoute from '../../components/auth/ProtectedRoute'
+import AdminDashboard from '../../components/pages/AdminDashboard'
+---
+
+<BaseLayout>
+  <ProtectedRoute client:load requiredRole="ADMIN">
+    <AdminDashboard client:load />
+  </ProtectedRoute>
+</BaseLayout>

@@ -1,0 +1,15 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro'
+import ProtectedRoute from '../../../components/auth/ProtectedRoute'
+import StoreDashboard from '../../../components/pages/StoreDashboard'
+
+export async function getStaticPaths() {
+  return []
+}
+---
+
+<BaseLayout>
+  <ProtectedRoute client:load>
+    <StoreDashboard client:load />
+  </ProtectedRoute>
+</BaseLayout>

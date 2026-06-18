@@ -37,7 +37,7 @@ export async function createUserAsStoreAdmin(req: Request, res: Response) {
   const hash = await argon2.hash(password)
   const created = await User.create({ username: user, password: hash, role: role as any, store_id: storeId })
 
-  res.status(201).json({ id: created.id, username: created.username, role: created.role, store_id: created.store_id })
+  return res.status(201).json({ id: created.id, username: created.username, role: created.role, store_id: created.store_id })
 }
 
 export async function createStoreAsAdmin(req: Request, res: Response) {
@@ -59,5 +59,5 @@ export async function createStoreAsAdmin(req: Request, res: Response) {
 
   const token = signToken({ sub: createdUser.id, username: createdUser.username, role: createdUser.role, store_id: createdUser.store_id })
 
-  res.status(201).json({ store: { id: (store as any).id, name: store.name, address: store.address }, admin: { id: createdUser.id, username: createdUser.username, role: createdUser.role }, token })
+  return res.status(201).json({ store: { id: (store as any).id, name: store.name, address: store.address }, admin: { id: createdUser.id, username: createdUser.username, role: createdUser.role }, token })
 }

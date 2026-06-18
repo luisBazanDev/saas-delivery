@@ -4,19 +4,19 @@ import { Store } from '../models/store.model'
 export async function createStore(req: Request, res: Response) {
   const { name, address } = req.body
   const s = await Store.create({ name, address })
-  res.status(201).json(s)
+  return res.status(201).json(s)
 }
 
 export async function listStores(req: Request, res: Response) {
   const items = await Store.findAll()
-  res.json(items)
+  return res.json(items)
 }
 
 export async function getStore(req: Request, res: Response) {
   const id = Number(req.params.id)
   const item = await Store.findByPk(id)
   if (!item) return res.status(404).json({ error: 'not found' })
-  res.json(item)
+  return res.json(item)
 }
 
 export async function updateStore(req: Request, res: Response) {
@@ -24,7 +24,7 @@ export async function updateStore(req: Request, res: Response) {
   const item = await Store.findByPk(id)
   if (!item) return res.status(404).json({ error: 'not found' })
   await item.update(req.body)
-  res.json(item)
+  return res.json(item)
 }
 
 export async function deleteStore(req: Request, res: Response) {
@@ -32,5 +32,5 @@ export async function deleteStore(req: Request, res: Response) {
   const item = await Store.findByPk(id)
   if (!item) return res.status(404).json({ error: 'not found' })
   await item.destroy()
-  res.status(204).send()
+  return res.status(204).send()
 }

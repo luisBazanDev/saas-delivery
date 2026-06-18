@@ -25,7 +25,7 @@ export async function register(req: Request, res: Response) {
   const user = await User.create({ username, password: hash, role: 'ADMIN' as any })
   const token = jwt.sign({ sub: user.id, username: user.username, role: user.role }, privateKey, { algorithm: 'RS256', expiresIn: '1h' })
 
-  res.status(201).json({ id: user.id, username: user.username, role: user.role, token })
+  return res.status(201).json({ id: user.id, username: user.username, role: user.role, token })
 }
 
 export async function login(req: Request, res: Response) {
@@ -42,5 +42,6 @@ export async function login(req: Request, res: Response) {
     return res.status(401).json({ error: 'invalid credentials' })
 
   const token = jwt.sign({ sub: user.id, username: user.username, role: user.role }, privateKey, { algorithm: 'RS256', expiresIn: '1h' })
-  res.json({ bearerToken: token })
+  
+  return res.status(200).json({ bearerToken: token })
 }

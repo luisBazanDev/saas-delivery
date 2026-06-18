@@ -15,6 +15,9 @@ public.key
 .env
 .env.*
 
+#data
+data/
+
 #node
 .DS_Store
 node_modules/

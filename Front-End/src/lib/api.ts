@@ -1,6 +1,8 @@
 import { getToken } from './auth'
 
-const API_BASE = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000/api'
+const API_BASE = typeof window === 'undefined'
+  ? (import.meta.env.API_URL || 'http://localhost:3000/api')
+  : (import.meta.env.PUBLIC_API_URL || '/api')
 
 interface ApiOptions extends RequestInit {
   headers?: Record<string, string>

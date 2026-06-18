@@ -1,0 +1,10 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro'
+import StoreUsers from '../../../components/pages/StoreUsers'
+
+const { storeId } = Astro.params
+---
+
+<BaseLayout>
+  <StoreUsers client:load storeId={storeId} />
+</BaseLayout>

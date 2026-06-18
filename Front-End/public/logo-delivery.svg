@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 650 160" width="100%" height="100%">
+  <g transform="translate(15, 5)">
+    <path d="M 52 38 
+             h 24 
+             l -10 28 
+             h 16 
+             l -32 42 
+             l 10 -32 
+             h -16 
+             z"
+          fill="#b1f062" 
+          stroke="#b1f062" 
+          stroke-width="8" 
+          stroke-linejoin="round" />
+          
+    <text x="130" y="100" fill="#b1f062">
+      <tspan font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" 
+             font-weight="800" 
+             font-size="72" 
+             letter-spacing="-1">HX</tspan>
+             
+      <tspan font-family="'Courier New', Courier, 'Roboto Slab', Rockwell, monospace" 
+             font-weight="700" 
+             font-size="72" 
+             dx="18" 
+             letter-spacing="-2">Delivery</tspan>
+    </text>
+  </g>
+</svg>

@@ -1,8 +1,11 @@
 ---
 import BaseLayout from '../../../layouts/BaseLayout.astro'
+import ProtectedRoute from '../../../components/auth/ProtectedRoute'
 import StoreDashboard from '../../../components/pages/StoreDashboard'
 ---
 
 <BaseLayout>
-  <StoreDashboard client:load />
+  <ProtectedRoute client:load requiredRole="STORE_DELIVERY">
+    <StoreDashboard client:load />
+  </ProtectedRoute>
 </BaseLayout>

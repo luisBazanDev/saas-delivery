@@ -1,10 +1,10 @@
 import { useState, useEffect, useCallback } from 'react'
-import { isAuthenticated, removeToken } from '../lib/auth'
+import { isAuthenticated, removeToken, getToken, decodeToken, setUser, getUser } from '../lib/auth'
 import { api } from '../lib/api'
 import type { AuthResponse, User } from '../lib/types'
 
 export function useAuth() {
-  const [user, setUser] = useState<User | null>(null)
+  const [user, setUserState] = useState<User | null>(null)
   const [loading, setLoading] = useState(false)
 
   const login = useCallback(async (username: string, password: string) => {
@@ -14,11 +14,16 @@ export function useAuth() {
       const token = res.bearerToken || res.token
       if (token) {
         localStorage.setItem('auth_token', token)
-        setUser({
-          id: res.id || 0,
-          username: res.username || username,
-          role: res.role || 'STORE_ADMIN',
-        })
+        const payload = decodeToken(token)
+        if (payload) {
+          const userData: User = {
+            id: res.id || payload.sub,
+            username: res.username || payload.username || username,
+            role: res.role || payload.role,
+          }
+          setUser(userData)
+          setUserState(userData)
+        }
       }
       return res
     } finally {
@@ -28,14 +33,35 @@ export function useAuth() {
 
   const logout = useCallback(() => {
     removeToken()
-    setUser(null)
+    setUserState(null)
   }, [])
 
-  useEffect(() => {
-    if (isAuthenticated()) {
-      // TODO: fetch user profile from backend
+  const refreshUser = useCallback(async () => {
+    if (!isAuthenticated()) {
+      setUserState(null)
+      return
+    }
+
+    const token = getToken()
+    if (token) {
+      const payload = decodeToken(token)
+      if (payload) {
+        const userData: User = {
+          id: payload.sub,
+          username: payload.username,
+          role: payload.role,
+        }
+        setUser(userData)
+        setUserState(userData)
+      }
     }
   }, [])
 
-  return { user, loading, login, logout }
+  useEffect(() => {
+    if (isAuthenticated() && !user) {
+      refreshUser()
+    }
+  }, [user, refreshUser])
+
+  return { user, loading, login, logout, refreshUser }
 }

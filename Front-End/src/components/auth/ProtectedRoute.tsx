@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { isAuthenticated } from '../../lib/auth'
+import { isAuthenticated, hasRole, checkSession, removeToken } from '../../lib/auth'
 
 interface ProtectedRouteProps {
   children: React.ReactNode
@@ -12,15 +12,51 @@ export default function ProtectedRoute({ children, requiredRole }: ProtectedRout
 
   useEffect(() => {
     const check = () => {
+      if (!checkSession()) {
+        window.location.href = '/login'
+        return
+      }
+
       if (!isAuthenticated()) {
         window.location.href = '/login'
         return
       }
+
+      if (requiredRole && !hasRole(requiredRole)) {
+        window.location.href = '/'
+        return
+      }
+
       setAuthorized(true)
       setChecking(false)
     }
     check()
+
+    const interval = setInterval(() => {
+      if (!checkSession()) {
+        removeToken()
+        window.location.href = '/login'
+      }
+    }, 60000)
+
+    return () => clearInterval(interval)
   }, [requiredRole])
+
+  useEffect(() => {
+    const handleActivity = () => {
+      checkSession()
+    }
+
+    window.addEventListener('click', handleActivity)
+    window.addEventListener('keypress', handleActivity)
+    window.addEventListener('scroll', handleActivity)
+
+    return () => {
+      window.removeEventListener('click', handleActivity)
+      window.removeEventListener('keypress', handleActivity)
+      window.removeEventListener('scroll', handleActivity)
+    }
+  }, [])
 
   if (checking) {
     return (

@@ -1,12 +1,15 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro'
+import ProtectedRoute from '../components/auth/ProtectedRoute'
 ---
 
 <BaseLayout>
-  <div class="min-h-screen flex items-center justify-center bg-dark-bg">
-    <div class="text-center">
-      <h1 class="text-4xl font-bold text-accent-green mb-4">SaaS Delivery</h1>
-      <p class="text-text-secondary">Sistema de gestión de entregas</p>
+  <ProtectedRoute client:load>
+    <div class="min-h-screen flex items-center justify-center bg-dark-bg">
+      <div class="text-center">
+        <h1 class="text-4xl font-bold text-accent-green mb-4">SaaS Delivery</h1>
+        <p class="text-text-secondary">Sistema de gestión de entregas</p>
+      </div>
     </div>
-  </div>
+  </ProtectedRoute>
 </BaseLayout>

@@ -1,10 +1,13 @@
 ---
 import BaseLayout from '../../../layouts/BaseLayout.astro'
+import ProtectedRoute from '../../../components/auth/ProtectedRoute'
 import StoreUsers from '../../../components/pages/StoreUsers'
 
 const { storeId } = Astro.params
 ---
 
 <BaseLayout>
-  <StoreUsers client:load storeId={storeId} />
+  <ProtectedRoute client:load requiredRole="STORE_ADMIN">
+    <StoreUsers client:load storeId={storeId} />
+  </ProtectedRoute>
 </BaseLayout>

@@ -1,4 +1,4 @@
-import { getToken } from './auth'
+import { getToken, removeToken } from './auth'
 
 const API_BASE = typeof window === 'undefined'
   ? (import.meta.env.API_URL || 'http://localhost:3000/api')
@@ -27,6 +27,10 @@ async function request<T>(path: string, options: ApiOptions = {}): Promise<T> {
 
   if (!res.ok) {
     if (res.status === 401) {
+      removeToken()
+      if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
+        window.location.href = '/login'
+      }
       throw new Error('unauthorized')
     }
     const body = await res.json().catch(() => ({}))

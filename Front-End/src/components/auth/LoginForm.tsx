@@ -10,14 +10,37 @@ export default function LoginForm() {
   const [error, setError] = useState('')
   const { login, loading } = useAuth()
 
+  function sanitizeInput(value: string): string {
+    return value.replace(/[<>"'&]/g, '')
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError('')
+
+    const sanitizedUsername = sanitizeInput(username.trim())
+    const sanitizedPassword = password
+
+    if (!sanitizedUsername || !sanitizedPassword) {
+      setError('Usuario y contraseña son requeridos')
+      return
+    }
+
+    if (sanitizedUsername.length < 3 || sanitizedUsername.length > 50) {
+      setError('El usuario debe tener entre 3 y 50 caracteres')
+      return
+    }
+
+    if (sanitizedPassword.length < 6) {
+      setError('La contraseña debe tener al menos 6 caracteres')
+      return
+    }
+
     try {
-      await login(username, password)
+      await login(sanitizedUsername, sanitizedPassword)
       window.location.href = '/'
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed')
+      setError(err instanceof Error ? err.message : 'Error al iniciar sesión')
     }
   }
 
@@ -38,9 +61,11 @@ export default function LoginForm() {
               label="Usuario"
               type="text"
               value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              onChange={(e) => setUsername(sanitizeInput(e.target.value))}
               required
               placeholder="Ingresa tu usuario"
+              maxLength={50}
+              autoComplete="username"
             />
             <Input
               id="password"
@@ -50,6 +75,8 @@ export default function LoginForm() {
               onChange={(e) => setPassword(e.target.value)}
               required
               placeholder="Ingresa tu contraseña"
+              minLength={6}
+              autoComplete="current-password"
             />
             {error && (
               <p className="mb-4 text-sm text-accent-red bg-accent-red/10 border border-accent-red/20 rounded-lg px-3 py-2.5">

@@ -6,7 +6,7 @@ ARG PUBLIC_API_URL=/api
 ENV PUBLIC_API_URL=$PUBLIC_API_URL
 
 COPY package*.json ./
-RUN npm ci
+RUN npm install
 
 COPY . .
 RUN npm run build

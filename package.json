@@ -1,0 +1,14 @@
+{
+  "name": "saas-delivery",
+  "private": true,
+  "scripts": {
+    "predev": "docker compose -f Back-End/docker-compose.yml up -d",
+    "dev": "concurrently -n db,backend,frontend -c yellow,blue,green \"npm run dev:db\" \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:db": "docker compose -f Back-End/docker-compose.yml logs -f",
+    "dev:backend": "npm run server --prefix Back-End",
+    "dev:frontend": "npm run dev --prefix Front-End"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

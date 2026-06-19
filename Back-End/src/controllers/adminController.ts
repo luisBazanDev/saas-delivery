@@ -40,6 +40,26 @@ export async function createUserAsStoreAdmin(req: Request, res: Response) {
   return res.status(201).json({ id: created.id, username: created.username, role: created.role, store_id: created.store_id })
 }
 
+export async function selectStoreAsAdmin(req: Request, res: Response) {
+  const { store_id } = req.body as { store_id: number }
+  if (!store_id) return res.status(400).json({ error: 'store_id required' })
+
+  const requester = (req as any).user
+  if (!requester || requester.role !== 'ADMIN') return res.status(403).json({ error: 'forbidden' })
+
+  const store = await Store.findByPk(store_id)
+  if (!store) return res.status(404).json({ error: 'store not found' })
+
+  const user = await User.findByPk(requester.id)
+  if (!user) return res.status(404).json({ error: 'user not found' })
+
+  await user.update({ store_id })
+
+  const token = signToken({ sub: user.id, username: user.username, role: user.role, store_id: user.store_id })
+
+  return res.status(200).json({ token, store_id: user.store_id })
+}
+
 export async function createStoreAsAdmin(req: Request, res: Response) {
   const { name, address, first_user } = req.body as any
   if (!name || !address || !first_user || !first_user.username || !first_user.password) {

@@ -4,9 +4,27 @@ const TOKEN_KEY = 'auth_token'
 const USER_KEY = 'auth_user'
 const LAST_ACTIVITY_KEY = 'last_activity'
 const SESSION_TIMEOUT = 30 * 60 * 1000
+const COOKIE_NAME = 'auth_token'
+const COOKIE_MAX_AGE = 60 * 60
 
 function isBrowser(): boolean {
   return typeof window !== 'undefined'
+}
+
+export function setTokenCookie(token: string): void {
+  if (!isBrowser()) return
+  document.cookie = `${COOKIE_NAME}=${token}; path=/; max-age=${COOKIE_MAX_AGE}; SameSite=Lax; Secure`
+}
+
+export function getTokenCookie(): string | null {
+  if (!isBrowser()) return null
+  const match = document.cookie.split('; ').find((row) => row.startsWith(`${COOKIE_NAME}=`))
+  return match ? match.split('=')[1] : null
+}
+
+export function removeTokenCookie(): void {
+  if (!isBrowser()) return
+  document.cookie = `${COOKIE_NAME}=; path=/; max-age=0; SameSite=Lax`
 }
 
 export function getToken(): string | null {
@@ -77,7 +95,7 @@ export function hasRole(requiredRole: string): boolean {
   return userLevel >= requiredLevel
 }
 
-export function decodeToken(token: string): { sub: number; username: string; role: UserRole; exp: number } | null {
+export function decodeToken(token: string): { sub: number; username: string; role: UserRole; store_id?: number; exp: number } | null {
   try {
     const base64Url = token.split('.')[1]
     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')

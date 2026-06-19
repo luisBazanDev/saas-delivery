@@ -3,6 +3,38 @@ import BaseLayout from '../layouts/BaseLayout.astro'
 import ProtectedRoute from '../components/auth/ProtectedRoute'
 ---
 
+<script is:inline>
+  const token = localStorage.getItem('auth_token')
+  if (token) {
+    try {
+      const base64Url = token.split('.')[1]
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
+      const payload = JSON.parse(decodeURIComponent(atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')))
+      const now = Math.floor(Date.now() / 1000)
+      if (payload.exp && payload.exp < now) {
+        localStorage.removeItem('auth_token')
+        localStorage.removeItem('auth_user')
+        localStorage.removeItem('last_activity')
+        document.cookie = 'auth_token=; path=/; max-age=0; SameSite=Lax'
+      } else if (payload.store_id) {
+        window.location.href = '/store/' + payload.store_id + '/orders'
+      } else if (payload.role === 'ADMIN') {
+        window.location.href = '/admin/stores'
+      } else {
+        localStorage.removeItem('auth_token')
+        localStorage.removeItem('auth_user')
+        localStorage.removeItem('last_activity')
+        document.cookie = 'auth_token=; path=/; max-age=0; SameSite=Lax'
+      }
+    } catch {
+      localStorage.removeItem('auth_token')
+      localStorage.removeItem('auth_user')
+      localStorage.removeItem('last_activity')
+      document.cookie = 'auth_token=; path=/; max-age=0; SameSite=Lax'
+    }
+  }
+</script>
+
 <BaseLayout>
   <ProtectedRoute client:load>
     <div class="min-h-screen flex items-center justify-center bg-dark-bg">

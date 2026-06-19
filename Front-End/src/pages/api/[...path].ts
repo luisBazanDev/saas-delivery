@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro'
 
-const BACKEND_URL = import.meta.env.API_URL || 'http://backend:3000'
+const BACKEND_URL = import.meta.env.API_URL || 'http://localhost:3000/api'
 
 export const ALL: APIRoute = async ({ request, params }) => {
   const path = params.path

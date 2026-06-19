@@ -1,0 +1,13 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro'
+import ProtectedRoute from '../../../components/auth/ProtectedRoute'
+import OrderBoard from '../../../components/pages/OrderBoard'
+
+const { storeId } = Astro.params
+---
+
+<BaseLayout>
+  <ProtectedRoute client:load>
+    <OrderBoard client:load storeId={storeId} />
+  </ProtectedRoute>
+</BaseLayout>

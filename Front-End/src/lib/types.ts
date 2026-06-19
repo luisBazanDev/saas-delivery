@@ -41,6 +41,7 @@ export interface AuthResponse {
   id?: number
   username?: string
   role?: UserRole
+  store_id?: number
   token?: string
   bearerToken?: string
 }

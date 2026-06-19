@@ -1,4 +1,4 @@
-import { getToken, removeToken } from './auth'
+import { getToken, removeToken, removeTokenCookie } from './auth'
 
 const API_BASE = typeof window === 'undefined'
   ? (import.meta.env.API_URL || 'http://localhost:3000/api')
@@ -28,6 +28,7 @@ async function request<T>(path: string, options: ApiOptions = {}): Promise<T> {
   if (!res.ok) {
     if (res.status === 401) {
       removeToken()
+      removeTokenCookie()
       if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
         window.location.href = '/login'
       }

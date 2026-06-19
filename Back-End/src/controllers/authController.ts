@@ -23,9 +23,9 @@ export async function register(req: Request, res: Response) {
   const hash = await argon2.hash(password)
 
   const user = await User.create({ username, password: hash, role: 'ADMIN' as any })
-  const token = jwt.sign({ sub: user.id, username: user.username, role: user.role }, privateKey, { algorithm: 'RS256', expiresIn: '1h' })
+  const token = jwt.sign({ sub: user.id, username: user.username, role: user.role, store_id: user.store_id }, privateKey, { algorithm: 'RS256', expiresIn: '1h' })
 
-  return res.status(201).json({ id: user.id, username: user.username, role: user.role, token })
+  return res.status(201).json({ id: user.id, username: user.username, role: user.role, store_id: user.store_id, token })
 }
 
 export async function login(req: Request, res: Response) {
@@ -41,7 +41,7 @@ export async function login(req: Request, res: Response) {
   if (!ok)
     return res.status(401).json({ error: 'invalid credentials' })
 
-  const token = jwt.sign({ sub: user.id, username: user.username, role: user.role }, privateKey, { algorithm: 'RS256', expiresIn: '1h' })
+  const token = jwt.sign({ sub: user.id, username: user.username, role: user.role, store_id: user.store_id }, privateKey, { algorithm: 'RS256', expiresIn: '1h' })
   
-  return res.status(200).json({ bearerToken: token })
+  return res.status(200).json({ bearerToken: token, store_id: user.store_id })
 }

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useAuth } from '../../hooks/useAuth'
+import { decodeToken } from '../../lib/auth'
 import Input from '../ui/Input'
 import Button from '../ui/Button'
 import { Zap } from 'lucide-react'
@@ -8,7 +9,7 @@ export default function LoginForm() {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
-  const { login, loading } = useAuth()
+  const { login, loading, logout } = useAuth()
 
   function sanitizeInput(value: string): string {
     return value.replace(/[<>"'&]/g, '')
@@ -38,7 +39,18 @@ export default function LoginForm() {
 
     try {
       await login(sanitizedUsername, sanitizedPassword)
-      window.location.href = '/'
+      const token = localStorage.getItem('auth_token')
+      if (token) {
+        const payload = decodeToken(token)
+        if (payload?.store_id) {
+          window.location.href = `/store/${payload.store_id}/orders`
+        } else if (payload?.role === 'ADMIN') {
+          window.location.href = '/admin/stores'
+        } else {
+          logout()
+          setError('No tienes una tienda asignada. Contacta al administrador.')
+        }
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al iniciar sesión')
     }

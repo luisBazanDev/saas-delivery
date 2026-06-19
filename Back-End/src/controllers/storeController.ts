@@ -7,6 +7,11 @@ export async function createStore(req: Request, res: Response) {
   return res.status(201).json(s)
 }
 
+export async function list(req: Request, res: Response) {
+  const stores = await Store.findAll()
+  return res.status(200).json(stores)
+}
+
 export async function listStores(req: Request, res: Response) {
   const items = await Store.findAll()
   return res.json(items)

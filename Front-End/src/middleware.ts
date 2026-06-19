@@ -1,4 +1,5 @@
 import { defineMiddleware } from 'astro:middleware'
+import { decodeToken } from './lib/auth'
 
 const SECURITY_HEADERS: Record<string, string> = {
   'X-Content-Type-Options': 'nosniff',
@@ -9,7 +10,89 @@ const SECURITY_HEADERS: Record<string, string> = {
   'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
 }
 
+const PUBLIC_PATHS = ['/login', '/api']
+
+function getTokenFromRequest(context: any): string | null {
+  const cookieHeader = context.request.headers.get('cookie') || ''
+  const tokenMatch = cookieHeader.split('; ').find((row: string) => row.startsWith('auth_token='))
+  return tokenMatch ? tokenMatch.split('=')[1] : null
+}
+
+function isTokenValid(token: string): boolean {
+  const payload = decodeToken(token)
+  if (!payload) return false
+  const now = Math.floor(Date.now() / 1000)
+  if (payload.exp && payload.exp < now) return false
+  return true
+}
+
+function getRedirectForLoggedInUser(payload: any): string | null {
+  if (payload.store_id) {
+    return `/store/${payload.store_id}/orders`
+  }
+  if (payload.role === 'ADMIN') {
+    return '/admin/stores'
+  }
+  return null
+}
+
 export const onRequest = defineMiddleware(async (context, next) => {
+  const { pathname } = context.url
+  const token = getTokenFromRequest(context)
+  const isLoggedIn = token && isTokenValid(token)
+  const payload = isLoggedIn ? decodeToken(token) : null
+
+  if (pathname === '/login' && isLoggedIn && payload) {
+    const redirect = getRedirectForLoggedInUser(payload)
+    if (redirect) {
+      return context.redirect(redirect)
+    }
+    const response = await next()
+    response.headers.append('set-cookie', 'auth_token=; path=/; max-age=0; SameSite=Lax')
+    return response
+  }
+
+  if (pathname === '/' && isLoggedIn && payload) {
+    const redirect = getRedirectForLoggedInUser(payload)
+    if (redirect) {
+      return context.redirect(redirect)
+    }
+    const response = context.redirect('/login')
+    response.headers.append('set-cookie', 'auth_token=; path=/; max-age=0; SameSite=Lax')
+    return response
+  }
+
+  const storeMatch = pathname.match(/^\/store\/(\d+)\//)
+  if (storeMatch) {
+    const urlStoreId = storeMatch[1]
+    
+    if (!isLoggedIn) {
+      return context.redirect('/login')
+    }
+
+    if (payload && !payload.store_id && payload.role !== 'ADMIN') {
+      const response = context.redirect('/login')
+      response.headers.append('set-cookie', 'auth_token=; path=/; max-age=0; SameSite=Lax')
+      return response
+    }
+
+    if (payload && payload.store_id && String(payload.store_id) !== urlStoreId) {
+      return context.redirect(`/store/${payload.store_id}/orders`)
+    }
+  }
+
+  const isPublic = PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(p + '/'))
+
+  if (!isPublic) {
+    if (!token) {
+      return context.redirect('/login')
+    }
+
+    if (!isTokenValid(token)) {
+      return context.redirect('/login')
+    }
+  }
+
   const response = await next()
 
   for (const [key, value] of Object.entries(SECURITY_HEADERS)) {

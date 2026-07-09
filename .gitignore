@@ -51,3 +51,10 @@ pnpm-lock.yaml
 .pnpm-store/
 pnpm-debug.log
 pnpm-workspace.yaml
+
+#localSystem
+TODO.md
+SECURITY_NOTES.md
+TECHNICAL_DECISIONS.md
+AGENTS.md
+PROJECT_CONTEXT.md

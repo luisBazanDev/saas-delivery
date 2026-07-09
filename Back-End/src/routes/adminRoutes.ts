@@ -9,6 +9,6 @@ router.post('/users/new', authMiddleware, requireRole('STORE_ADMIN'), createUser
 
 router.post('/store/new', authMiddleware, requireRole('ADMIN'), createStoreAsAdmin)
 
-router.post('/select-store', authMiddleware, requireRole('ADMIN'), selectStoreAsAdmin)
+router.post('/select-store', authMiddleware, requireRole('STORE_ADMIN'), selectStoreAsAdmin)
 
 export default router

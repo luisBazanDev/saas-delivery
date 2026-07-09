@@ -2,8 +2,8 @@ import { Request, Response } from 'express'
 import { Product } from '../models/product.model'
 
 export async function createProduct(req: Request, res: Response) {
-  const { store_id, name, description, category_id } = req.body
-  const product = await Product.create({ store_id, name, description, category_id })
+  const { store_id, name, description, category_id, price, stock } = req.body
+  const product = await Product.create({ store_id, name, description, category_id, price, stock })
   return res.status(201).json(product)
 }
 

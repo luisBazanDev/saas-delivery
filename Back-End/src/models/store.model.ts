@@ -8,46 +8,61 @@ import {
 import { sequelize } from '../repositories'
 
 export class Store extends Model<InferAttributes<Store>, InferCreationAttributes<Store>> {
-    declare id: CreationOptional<number>
-    declare name: string
-    declare address: string
+    declare id: CreationOptional<number>;
+
+    declare name: string;
+
+    declare address?: string;
+
+    declare is_active?: boolean;
 }
 
 Store.init(
-  {
 
-    id: {
+    {
 
-      type: DataTypes.INTEGER,
+        id: {
 
-      autoIncrement: true,
+            type: DataTypes.INTEGER,
 
-      primaryKey: true,
+            autoIncrement: true,
+
+            primaryKey: true,
+
+        },
+
+        name: {
+
+            type: DataTypes.STRING(255),
+
+            allowNull: false,
+
+        },
+
+        address: {
+
+            type: DataTypes.STRING(255),
+
+        },
+
+        is_active: {
+
+            type: DataTypes.BOOLEAN,
+
+            defaultValue: true,
+
+        },
 
     },
 
-    name: {
+    {
 
-      type: DataTypes.STRING(255),
+        sequelize,
 
-    },
+        tableName: "store",
 
-    address: {
+        timestamps: false,
 
-      type: DataTypes.STRING(255),
-
-    },
-
-  },
-
-  {
-
-    sequelize,
-
-    tableName: "store",
-
-    timestamps: false,
-
-  }
+    }
 
 );

@@ -15,13 +15,17 @@ export class Product extends Model<
   InferAttributes<Product>,
   InferCreationAttributes<Product>
 > {
-  declare id: CreationOptional<number>;
+  declare id: CreationOptional<number>
 
   declare store_id: ForeignKey<Store["id"]>
 
   declare name: string
 
   declare description: string
+
+  declare price: number
+
+  declare stock: number
 
   declare category_id: ForeignKey<Category["id"]>
 }
@@ -57,6 +61,15 @@ Product.init(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
+    price: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: false,
+    },
+    stock: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+      allowNull: false,
+    }
   },
   {
     sequelize,

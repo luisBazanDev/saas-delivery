@@ -14,59 +14,103 @@ export class Order extends Model<
   InferAttributes<Order>,
   InferCreationAttributes<Order>
 > {
-  declare code: string
+    declare code: string;
 
-  declare store_id: ForeignKey<Store["id"]>
+    declare store_id?: number;
 
-  declare status: OrderStatus
+    declare status?: string;
 
-  declare start_time: Date
+    declare start_time?: Date;
 
-  declare end_time: Date | null
+    declare payment_id?: number;
+
+    declare total?: number;
+
+    declare end_time?: Date;
+
+    declare address?: string;
+
+    declare lat?: number;
+
+    declare lon?: number;
 }
 
 Order.init(
-  {
-    code: {
-      type: DataTypes.CHAR(8),
-      primaryKey: true,
+
+    {
+
+        code: {
+
+            type: DataTypes.STRING(50),
+
+            primaryKey: true,
+
+        },
+
+        store_id: {
+
+            type: DataTypes.INTEGER,
+
+        },
+
+        status: {
+
+            type: DataTypes.STRING(50),
+
+        },
+
+        start_time: {
+
+            type: DataTypes.DATE,
+
+        },
+
+        payment_id: {
+
+            type: DataTypes.INTEGER,
+
+        },
+
+        total: {
+
+            type: DataTypes.DECIMAL(10, 2),
+
+        },
+
+        end_time: {
+
+            type: DataTypes.DATE,
+
+        },
+
+        address: {
+
+            type: DataTypes.STRING(255),
+
+        },
+
+        lat: {
+
+            type: DataTypes.DECIMAL(10, 8),
+
+        },
+
+        lon: {
+
+            type: DataTypes.DECIMAL(11, 8),
+
+        },
+
     },
 
-    store_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: Store,
-        key: 'id'
-      }
-    },
+    {
 
-    status: {
-      type: DataTypes.ENUM(
-        "ORDERED",
-        "ACCEPTED",
-        "IN_KITCHEN",
-        "IN_TRANSIT",
-        "FAILED",
-        "RECEIVED"
-      ),
-      allowNull: false,
-      defaultValue: "ORDERED",
-    },
+        sequelize,
 
-    start_time: {
-      type: DataTypes.DATE,
-      allowNull: false,
-    },
+        tableName: "order",
 
-    end_time: {
-      type: DataTypes.DATE,
-      allowNull: true,
-    },
-  },
-  {
-    sequelize,
-    tableName: "orders",
-    timestamps: false,
-  }
+        timestamps: false,
+
+    }
+
 );

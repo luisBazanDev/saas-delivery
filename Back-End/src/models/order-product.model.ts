@@ -19,6 +19,8 @@ export class OrderProduct extends Model<
   declare order_code: ForeignKey<Order["code"]>
 
   declare amount: number;
+
+  declare price: number;
 }
 
 OrderProduct.init(
@@ -37,6 +39,11 @@ OrderProduct.init(
       type: DataTypes.SMALLINT,
       allowNull: false,
     },
+
+    price: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: false,
+    }
   },
   {
     sequelize,

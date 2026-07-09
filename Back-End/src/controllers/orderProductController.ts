@@ -3,6 +3,15 @@ import { OrderProduct } from '../models/order-product.model'
 
 export async function createOrderProduct(req: Request, res: Response) {
   const { product_id, order_code, amount, price } = req.body
+  if (!product_id || !order_code) {
+    return res.status(400).json({ error: 'product_id and order_code are required' })
+  }
+  const existing = await OrderProduct.findOne({
+    where: { order_code, product_id }
+  })
+  if (existing) {
+    return res.status(409).json({ error: 'order product already exists' })
+  }
   const item = await OrderProduct.create({ product_id, order_code, amount, price })
   return res.status(201).json(item)
 }

@@ -3,6 +3,13 @@ import { Payment } from '../models/payment.model'
 
 export async function createPayment(req: Request, res: Response) {
   const { name, logo_url } = req.body
+  if (!name) {
+    return res.status(400).json({ error: 'payment name is required' })
+  }
+  const existing = await Payment.findOne({ where: { name } })
+  if (existing) {
+    return res.status(409).json({ error: 'payment method already exists' })
+  }
   const item = await Payment.create({ name, logo_url })
   return res.status(201).json(item)
 }

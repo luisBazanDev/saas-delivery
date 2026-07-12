@@ -129,7 +129,25 @@ export async function seed() {
       store_id: store2.id,
       is_active: true,
     })
-    console.log('Created 7 store users (2 admins, 2 managers, 3 delivery)')
+
+    const chef1 = await User.create({
+      username: 'chef_burger',
+      password: storePassword,
+      email: 'chef@burger.hxdelivery.com',
+      role: 'STORE_CHEF' as any,
+      store_id: store1.id,
+      is_active: true,
+    })
+
+    const chef2 = await User.create({
+      username: 'chef_pizza',
+      password: storePassword,
+      email: 'chef@pizza.hxdelivery.com',
+      role: 'STORE_CHEF' as any,
+      store_id: store2.id,
+      is_active: true,
+    })
+    console.log('Created 9 store users (2 admins, 2 managers, 3 delivery, 2 chefs)')
 
     // --- Payments ---
     const payCash = await Payment.create({ name: 'Efectivo' })
@@ -241,6 +259,7 @@ export async function seed() {
     console.log('Admin: admin / admin123')
     console.log('Store Admins: admin_burger / store123, admin_pizza / store123')
     console.log('Store Managers: manager_burger / store123, manager_pizza / store123')
+    console.log('Chefs: chef_burger / store123, chef_pizza / store123')
     console.log('Delivery: repartidor_carlos / delivery123, repartidor_maria / delivery123, repartidor_juan / delivery123')
     console.log('=====================')
 

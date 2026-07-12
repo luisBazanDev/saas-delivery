@@ -78,12 +78,13 @@ export function isAuthenticated(): boolean {
 export function hasRole(requiredRole: string): boolean {
   const user = getUser()
   if (!user) return false
-  const roleHierarchy: Record<UserRole, number> = {
-    ADMIN: 100,
-    STORE_ADMIN: 50,
-    STORE_MANAGER: 30,
-    STORE_DELIVERY: 10,
-  }
+    const roleHierarchy: Record<UserRole, number> = {
+      ADMIN: 100,
+      STORE_ADMIN: 50,
+      STORE_MANAGER: 30,
+      STORE_CHEF: 20,
+      STORE_DELIVERY: 10,
+    }
   const userLevel = roleHierarchy[user.role] || 0
   const requiredLevel = roleHierarchy[requiredRole as UserRole] || 0
   return userLevel >= requiredLevel

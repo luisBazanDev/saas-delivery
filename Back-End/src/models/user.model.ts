@@ -44,7 +44,7 @@ User.init({
         type: DataTypes.STRING(50),
     },
     role: {
-        type: DataTypes.ENUM("ADMIN", "STORE_MANAGER", "STORE_ADMIN", "STORE_DELIVERY"),
+        type: DataTypes.ENUM("ADMIN", "STORE_MANAGER", "STORE_ADMIN", "STORE_DELIVERY", "STORE_CHEF"),
         allowNull: false,
     },
     store_id: {

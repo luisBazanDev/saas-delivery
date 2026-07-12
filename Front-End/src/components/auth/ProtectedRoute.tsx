@@ -18,10 +18,18 @@ export default function ProtectedRoute({ children, requiredRole }: ProtectedRout
 
     if (requiredRole && !hasRole(requiredRole)) {
       const user = getUser()
-      if (user?.store_id) {
+      if (user?.role === 'ADMIN') {
+        window.location.href = '/admin/stores'
+      } else if (user?.role === 'STORE_ADMIN') {
+        window.location.href = '/stores'
+      } else if (user?.role === 'STORE_CHEF' && user?.store_id) {
+        window.location.href = `/store/${user.store_id}/kitchen`
+      } else if (user?.role === 'STORE_DELIVERY' && user?.store_id) {
+        window.location.href = `/store/${user.store_id}/delivery`
+      } else if (user?.store_id) {
         window.location.href = `/store/${user.store_id}/orders`
       } else {
-        window.location.href = '/admin/stores'
+        window.location.href = '/login'
       }
       return
     }

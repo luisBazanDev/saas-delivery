@@ -31,10 +31,16 @@ export default function LoginForm() {
         setUser({ id: payload.sub, username: payload.username, role: payload.role, store_id: payload.store_id })
       }
 
-      if (res.store_id) {
-        window.location.href = `/store/${res.store_id}/orders`
-      } else if (payload?.role === 'ADMIN') {
+      if (payload?.role === 'ADMIN') {
         window.location.href = '/admin/stores'
+      } else if (payload?.role === 'STORE_ADMIN') {
+        window.location.href = '/stores'
+      } else if (payload?.role === 'STORE_CHEF') {
+        window.location.href = `/store/${res.store_id}/kitchen`
+      } else if (payload?.role === 'STORE_DELIVERY') {
+        window.location.href = `/store/${res.store_id}/delivery`
+      } else if (res.store_id) {
+        window.location.href = `/store/${res.store_id}/orders`
       } else {
         setError('No tienes una tienda asignada. Contacta al administrador.')
       }

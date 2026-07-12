@@ -17,10 +17,16 @@ import LoginForm from '../components/auth/LoginForm'
         localStorage.removeItem('auth_user')
         localStorage.removeItem('last_activity')
         document.cookie = 'auth_token=; path=/; max-age=0; SameSite=Lax'
-      } else if (payload.store_id) {
-        window.location.href = '/store/' + payload.store_id + '/orders'
       } else if (payload.role === 'ADMIN') {
         window.location.href = '/admin/stores'
+      } else if (payload.role === 'STORE_ADMIN') {
+        window.location.href = '/stores'
+      } else if (payload.role === 'STORE_CHEF') {
+        window.location.href = '/store/' + payload.store_id + '/kitchen'
+      } else if (payload.role === 'STORE_DELIVERY') {
+        window.location.href = '/store/' + payload.store_id + '/delivery'
+      } else if (payload.store_id) {
+        window.location.href = '/store/' + payload.store_id + '/orders'
       } else {
         localStorage.removeItem('auth_token')
         localStorage.removeItem('auth_user')

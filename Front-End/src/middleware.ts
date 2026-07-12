@@ -27,11 +27,20 @@ function isTokenValid(token: string): boolean {
 }
 
 function getRedirectForLoggedInUser(payload: any): string | null {
-  if (payload.store_id) {
-    return `/store/${payload.store_id}/orders`
-  }
   if (payload.role === 'ADMIN') {
     return '/admin/stores'
+  }
+  if (payload.role === 'STORE_ADMIN') {
+    return '/stores'
+  }
+  if (payload.role === 'STORE_CHEF' && payload.store_id) {
+    return `/store/${payload.store_id}/kitchen`
+  }
+  if (payload.role === 'STORE_DELIVERY' && payload.store_id) {
+    return `/store/${payload.store_id}/delivery`
+  }
+  if (payload.store_id) {
+    return `/store/${payload.store_id}/orders`
   }
   return null
 }
@@ -60,9 +69,10 @@ export const onRequest = defineMiddleware(async (context, next) => {
     return context.redirect('/login')
   }
 
-  const storeMatch = pathname.match(/^\/store\/(\d+)\//)
+  const storeMatch = pathname.match(/^\/store\/(\d+)\/(.+)/)
   if (storeMatch) {
     const urlStoreId = storeMatch[1]
+    const subPath = storeMatch[2]
 
     if (!isLoggedIn) {
       return context.redirect('/login')
@@ -76,6 +86,14 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
     if (payload && payload.store_id && String(payload.store_id) !== urlStoreId) {
       return context.redirect(`/store/${payload.store_id}/orders`)
+    }
+
+    if (payload && payload.role === 'STORE_CHEF' && subPath !== 'kitchen') {
+      return context.redirect(`/store/${payload.store_id}/kitchen`)
+    }
+
+    if (payload && payload.role === 'STORE_DELIVERY' && subPath !== 'delivery') {
+      return context.redirect(`/store/${payload.store_id}/delivery`)
     }
   }
 

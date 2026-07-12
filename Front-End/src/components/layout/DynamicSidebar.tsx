@@ -88,6 +88,17 @@ const roleConfig: Record<string, { name: string; menu: NavGroup[] }> = {
       },
     ],
   },
+  STORE_CHEF: {
+    name: 'Cocina',
+    menu: [
+      {
+        label: 'Cocina',
+        items: [
+          { id: 'kitchen', label: 'Cocina', href: '/store/${storeId}/kitchen', icon: <ChefHat size={16} /> },
+        ],
+      },
+    ],
+  },
 }
 
 function resolveHref(href: string, storeId?: string): string {

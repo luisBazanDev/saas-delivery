@@ -8,7 +8,7 @@ const storeId = Astro.params.storeId || ''
 ---
 
 <BaseLayout title="Órdenes en Cocina">
-<ProtectedRoute client:load requiredRole="STORE_MANAGER">
+<ProtectedRoute client:load requiredRole="STORE_CHEF">
   <AppLayout client:load title="Órdenes en Cocina" storeId={storeId}>
     <KitchenView client:load storeId={storeId} />
   </AppLayout>

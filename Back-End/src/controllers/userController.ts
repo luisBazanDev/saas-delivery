@@ -51,7 +51,7 @@ export async function createUser(req: Request, res: Response) {
     return res.status(400).json({ error: 'username, password, and role are required' })
   }
 
-  const validRoles = ['STORE_ADMIN', 'STORE_MANAGER', 'STORE_DELIVERY']
+  const validRoles = ['STORE_ADMIN', 'STORE_MANAGER', 'STORE_DELIVERY', 'STORE_CHEF']
   if (!validRoles.includes(role)) {
     return res.status(400).json({ error: `Invalid role. Must be one of: ${validRoles.join(', ')}` })
   }

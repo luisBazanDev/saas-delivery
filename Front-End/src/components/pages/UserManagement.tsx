@@ -3,7 +3,7 @@ import { api } from '../../lib/api'
 import type { User, UserRole, UserListResponse } from '../../lib/types'
 import { Plus, Pencil, Trash2, Users } from 'lucide-react'
 
-const ROLES: UserRole[] = ['STORE_ADMIN', 'STORE_MANAGER', 'STORE_DELIVERY']
+const ROLES: UserRole[] = ['STORE_ADMIN', 'STORE_MANAGER', 'STORE_DELIVERY', 'STORE_CHEF']
 
 export default function UserManagement() {
   const [users, setUsers] = useState<User[]>([])

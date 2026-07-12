@@ -1,11 +1,12 @@
 import { Router } from 'express'
-import { getKitchenOrders, markOrderReady } from '../controllers/kitchenController'
+import { getKitchenOrders, markOrderReady, cancelOrderReady } from '../controllers/kitchenController'
 import { authMiddleware } from '../middleware/authMiddleware'
 import { requireAnyRole } from '../middleware/requireRole'
 
 const router = Router()
 
-router.get('/', authMiddleware, requireAnyRole(['ADMIN', 'STORE_ADMIN', 'STORE_MANAGER']), getKitchenOrders)
-router.put('/:code/ready', authMiddleware, requireAnyRole(['ADMIN', 'STORE_ADMIN', 'STORE_MANAGER']), markOrderReady)
+router.get('/', authMiddleware, requireAnyRole(['ADMIN', 'STORE_ADMIN', 'STORE_MANAGER', 'STORE_CHEF']), getKitchenOrders)
+router.put('/:code/ready', authMiddleware, requireAnyRole(['ADMIN', 'STORE_ADMIN', 'STORE_MANAGER', 'STORE_CHEF']), markOrderReady)
+router.put('/:code/unready', authMiddleware, requireAnyRole(['ADMIN', 'STORE_ADMIN', 'STORE_MANAGER', 'STORE_CHEF']), cancelOrderReady)
 
 export default router

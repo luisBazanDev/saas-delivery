@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { isAuthenticated, hasRole, checkSession, removeToken } from '../../lib/auth'
+import { isAuthenticated, hasRole, getUser } from '../../lib/auth'
 
 interface ProtectedRouteProps {
   children: React.ReactNode
@@ -8,67 +8,37 @@ interface ProtectedRouteProps {
 
 export default function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) {
   const [authorized, setAuthorized] = useState(false)
-  const [checking, setChecking] = useState(true)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const check = () => {
-      if (!checkSession()) {
-        window.location.href = '/login'
-        return
-      }
-
-      if (!isAuthenticated()) {
-        window.location.href = '/login'
-        return
-      }
-
-      if (requiredRole && !hasRole(requiredRole)) {
-        window.location.href = '/'
-        return
-      }
-
-      setAuthorized(true)
-      setChecking(false)
+    if (!isAuthenticated()) {
+      window.location.href = '/login'
+      return
     }
-    check()
 
-    const interval = setInterval(() => {
-      if (!checkSession()) {
-        removeToken()
-        window.location.href = '/login'
+    if (requiredRole && !hasRole(requiredRole)) {
+      const user = getUser()
+      if (user?.store_id) {
+        window.location.href = `/store/${user.store_id}/orders`
+      } else {
+        window.location.href = '/admin/stores'
       }
-    }, 60000)
+      return
+    }
 
-    return () => clearInterval(interval)
+    setAuthorized(true)
+    setLoading(false)
   }, [requiredRole])
 
-  useEffect(() => {
-    const handleActivity = () => {
-      checkSession()
-    }
-
-    window.addEventListener('click', handleActivity)
-    window.addEventListener('keypress', handleActivity)
-    window.addEventListener('scroll', handleActivity)
-
-    return () => {
-      window.removeEventListener('click', handleActivity)
-      window.removeEventListener('keypress', handleActivity)
-      window.removeEventListener('scroll', handleActivity)
-    }
-  }, [])
-
-  if (checking) {
+  if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-dark-bg">
+      <div className="min-h-screen flex items-center justify-center bg-bg-base">
         <div className="text-text-secondary text-sm">Cargando...</div>
       </div>
     )
   }
 
-  if (!authorized) {
-    return null
-  }
+  if (!authorized) return null
 
   return <>{children}</>
 }

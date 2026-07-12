@@ -1,8 +1,8 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro'
-import ProtectedRoute from '../components/auth/ProtectedRoute'
 ---
 
+<BaseLayout>
 <script is:inline>
   const token = localStorage.getItem('auth_token')
   if (token) {
@@ -16,32 +16,23 @@ import ProtectedRoute from '../components/auth/ProtectedRoute'
         localStorage.removeItem('auth_user')
         localStorage.removeItem('last_activity')
         document.cookie = 'auth_token=; path=/; max-age=0; SameSite=Lax'
+        window.location.href = '/login'
       } else if (payload.store_id) {
         window.location.href = '/store/' + payload.store_id + '/orders'
       } else if (payload.role === 'ADMIN') {
         window.location.href = '/admin/stores'
       } else {
-        localStorage.removeItem('auth_token')
-        localStorage.removeItem('auth_user')
-        localStorage.removeItem('last_activity')
-        document.cookie = 'auth_token=; path=/; max-age=0; SameSite=Lax'
+        window.location.href = '/login'
       }
     } catch {
       localStorage.removeItem('auth_token')
       localStorage.removeItem('auth_user')
       localStorage.removeItem('last_activity')
       document.cookie = 'auth_token=; path=/; max-age=0; SameSite=Lax'
+      window.location.href = '/login'
     }
+  } else {
+    window.location.href = '/login'
   }
 </script>
-
-<BaseLayout>
-  <ProtectedRoute client:load>
-    <div class="min-h-screen flex items-center justify-center bg-dark-bg">
-      <div class="text-center">
-        <h1 class="text-4xl font-bold text-accent-green mb-4">SaaS Delivery</h1>
-        <p class="text-text-secondary">Sistema de gestión de entregas</p>
-      </div>
-    </div>
-  </ProtectedRoute>
 </BaseLayout>

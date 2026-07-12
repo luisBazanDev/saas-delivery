@@ -1,104 +1,105 @@
 import { useState } from 'react'
-import { useAuth } from '../../hooks/useAuth'
-import { decodeToken } from '../../lib/auth'
-import Input from '../ui/Input'
-import Button from '../ui/Button'
+import { loginApi } from '../../lib/api'
+import { setToken, setTokenCookie, setUser, decodeToken } from '../../lib/auth'
 import { Zap } from 'lucide-react'
 
 export default function LoginForm() {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
-  const { login, loading, logout } = useAuth()
-
-  function sanitizeInput(value: string): string {
-    return value.replace(/[<>"'&]/g, '')
-  }
+  const [loading, setLoading] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError('')
+    setLoading(true)
 
-    const sanitizedUsername = sanitizeInput(username.trim())
-    const sanitizedPassword = password
-
-    if (!sanitizedUsername || !sanitizedPassword) {
+    const sanitizedUsername = username.trim()
+    if (!sanitizedUsername || !password) {
       setError('Usuario y contraseña son requeridos')
-      return
-    }
-
-    if (sanitizedUsername.length < 3 || sanitizedUsername.length > 50) {
-      setError('El usuario debe tener entre 3 y 50 caracteres')
-      return
-    }
-
-    if (sanitizedPassword.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres')
+      setLoading(false)
       return
     }
 
     try {
-      await login(sanitizedUsername, sanitizedPassword)
-      const token = localStorage.getItem('auth_token')
-      if (token) {
-        const payload = decodeToken(token)
-        if (payload?.store_id) {
-          window.location.href = `/store/${payload.store_id}/orders`
-        } else if (payload?.role === 'ADMIN') {
-          window.location.href = '/admin/stores'
-        } else {
-          logout()
-          setError('No tienes una tienda asignada. Contacta al administrador.')
-        }
+      const res = await loginApi(sanitizedUsername, password)
+      setToken(res.bearerToken)
+      setTokenCookie(res.bearerToken)
+
+      const payload = decodeToken(res.bearerToken)
+      if (payload) {
+        setUser({ id: payload.sub, username: payload.username, role: payload.role, store_id: payload.store_id })
+      }
+
+      if (res.store_id) {
+        window.location.href = `/store/${res.store_id}/orders`
+      } else if (payload?.role === 'ADMIN') {
+        window.location.href = '/admin/stores'
+      } else {
+        setError('No tienes una tienda asignada. Contacta al administrador.')
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al iniciar sesión')
+    } finally {
+      setLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-dark-bg">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 mb-4">
-            <Zap size={24} className="text-accent-green" />
-            <span className="text-xl font-bold text-text-primary">SaaS Delivery</span>
-          </div>
-          <p className="text-text-secondary text-sm">Inicia sesión en tu cuenta</p>
-        </div>
-        <div className="bg-dark-card border border-dark-border rounded-xl p-8">
-          <form onSubmit={handleSubmit}>
-            <Input
-              id="username"
-              label="Usuario"
+    <div className="fixed inset-0 bg-bg-base z-[10000] flex items-center justify-center p-5">
+      <div className="bg-bg-surface border border-border p-10 w-full max-w-[380px] rounded-lg">
+        <h2 className="title-font flex items-center justify-center gap-2 mb-8 text-2xl">
+          <Zap size={24} className="text-accent" />
+          HX Delivery
+        </h2>
+
+        <form onSubmit={handleSubmit}>
+          <div className="mb-5">
+            <label className="block text-[12px] text-text-secondary uppercase tracking-[1px] mb-2">Usuario</label>
+            <input
               type="text"
               value={username}
-              onChange={(e) => setUsername(sanitizeInput(e.target.value))}
-              required
-              placeholder="Ingresa tu usuario"
-              maxLength={50}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="superadmin, admin, encargado..."
+              className="w-full bg-bg-base border border-border px-4 py-3 rounded-lg text-text-primary outline-none focus:border-accent transition-colors text-[14px]"
               autoComplete="username"
             />
-            <Input
-              id="password"
-              label="Contraseña"
+          </div>
+
+          <div className="mb-5">
+            <label className="block text-[12px] text-text-secondary uppercase tracking-[1px] mb-2">Contraseña</label>
+            <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              required
-              placeholder="Ingresa tu contraseña"
-              minLength={6}
+              placeholder="••••••"
+              className="w-full bg-bg-base border border-border px-4 py-3 rounded-lg text-text-primary outline-none focus:border-accent transition-colors text-[14px]"
               autoComplete="current-password"
             />
-            {error && (
-              <p className="mb-4 text-sm text-accent-red bg-accent-red/10 border border-accent-red/20 rounded-lg px-3 py-2.5">
-                {error}
-              </p>
-            )}
-            <Button type="submit" disabled={loading} className="w-full" size="lg">
-              {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
-            </Button>
-          </form>
+          </div>
+
+          {error && (
+            <p className="mb-4 text-sm text-danger bg-danger/10 border border-danger/30 rounded-lg px-3 py-2.5">
+              {error}
+            </p>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-accent text-bg-base border-none px-4 py-3.5 rounded-lg font-semibold cursor-pointer transition-opacity hover:opacity-90 text-[13px] flex items-center justify-center gap-2 disabled:opacity-50"
+          >
+            {loading ? 'Iniciando sesión...' : 'Acceder al Sistema'}
+          </button>
+        </form>
+
+        <div className="mt-5 text-[11px] text-text-secondary leading-relaxed">
+          <strong className="text-text-primary">Demo Roles:</strong><br />
+          1. <code className="text-accent">superadmin</code> (CRUD Locales)<br />
+          2. <code className="text-accent">admin</code> (Dueño: Locales, Docs, Rep, Kanban)<br />
+          3. <code className="text-accent">encargado</code> (Dashboard, Kanban)<br />
+          4. <code className="text-accent">cocinero</code> (Vista KDS Cocina)<br />
+          5. <code className="text-accent">repartidor</code> (Vista Móvil Entrega)
         </div>
       </div>
     </div>

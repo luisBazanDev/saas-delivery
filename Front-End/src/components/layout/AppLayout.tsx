@@ -1,22 +1,25 @@
-import Sidebar, { defaultAdminItems, defaultDeliveryItems } from './Sidebar'
+import DynamicSidebar from './DynamicSidebar'
 
 interface AppLayoutProps {
   children: React.ReactNode
-  brand?: string
-  navItems?: Array<{ label: string; href: string; icon: React.ReactNode }>
+  title?: string
+  storeId?: string
 }
 
-export default function AppLayout({ children, brand = 'HX Admin', navItems }: AppLayoutProps) {
-  const items = navItems || defaultAdminItems
+export default function AppLayout({ children, title = 'Vista', storeId }: AppLayoutProps) {
+  const currentPath = typeof window !== 'undefined' ? window.location.pathname : ''
 
   return (
-    <div className="flex min-h-screen bg-dark-bg">
-      <Sidebar brand={brand} items={items} />
-      <main className="flex-1 p-6 overflow-auto">
-        <div className="max-w-7xl mx-auto">{children}</div>
+    <div className="flex w-screen h-screen overflow-hidden bg-bg-base">
+      <DynamicSidebar currentPath={currentPath} storeId={storeId} />
+      <main className="flex-1 flex flex-col bg-bg-base overflow-hidden">
+        <header className="px-6 lg:px-10 py-5 border-b border-border flex items-center gap-3">
+          <h2 className="title-font text-[18px] font-medium text-text-primary">{title}</h2>
+        </header>
+        <div className="flex-1 overflow-y-auto p-6 lg:p-10">
+          {children}
+        </div>
       </main>
     </div>
   )
 }
-
-export { defaultAdminItems, defaultDeliveryItems }

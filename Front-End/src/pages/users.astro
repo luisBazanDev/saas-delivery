@@ -1,0 +1,14 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import ProtectedRoute from '../components/auth/ProtectedRoute'
+import UserManagement from '../components/pages/UserManagement'
+import AppLayout from '../components/layout/AppLayout'
+---
+
+<BaseLayout title="Gestión de Usuarios">
+<ProtectedRoute client:load requiredRole="STORE_ADMIN">
+  <AppLayout client:load title="Gestión de Usuarios">
+    <UserManagement client:load />
+  </AppLayout>
+</ProtectedRoute>
+</BaseLayout>

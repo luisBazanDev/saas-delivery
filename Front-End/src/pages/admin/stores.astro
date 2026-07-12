@@ -1,11 +1,14 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import ProtectedRoute from '../../components/auth/ProtectedRoute'
-import StoreSelector from '../../components/pages/StoreSelector'
+import AdminStores from '../../components/pages/AdminStores'
+import AppLayout from '../../components/layout/AppLayout'
 ---
 
-<BaseLayout>
-  <ProtectedRoute client:load requiredRole="ADMIN">
-    <StoreSelector client:load />
-  </ProtectedRoute>
+<BaseLayout title="Administración Global de Locales">
+<ProtectedRoute client:load requiredRole="ADMIN">
+  <AppLayout client:load title="Administración Global de Locales">
+    <AdminStores client:load />
+  </AppLayout>
+</ProtectedRoute>
 </BaseLayout>

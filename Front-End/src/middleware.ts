@@ -10,7 +10,7 @@ const SECURITY_HEADERS: Record<string, string> = {
   'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
 }
 
-const PUBLIC_PATHS = ['/login', '/api']
+const PUBLIC_PATHS = ['/login', '/api', '/favicon.ico']
 
 function getTokenFromRequest(context: any): string | null {
   const cookieHeader = context.request.headers.get('cookie') || ''
@@ -57,15 +57,13 @@ export const onRequest = defineMiddleware(async (context, next) => {
     if (redirect) {
       return context.redirect(redirect)
     }
-    const response = context.redirect('/login')
-    response.headers.append('set-cookie', 'auth_token=; path=/; max-age=0; SameSite=Lax')
-    return response
+    return context.redirect('/login')
   }
 
   const storeMatch = pathname.match(/^\/store\/(\d+)\//)
   if (storeMatch) {
     const urlStoreId = storeMatch[1]
-    
+
     if (!isLoggedIn) {
       return context.redirect('/login')
     }

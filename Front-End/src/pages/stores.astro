@@ -1,0 +1,14 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import ProtectedRoute from '../components/auth/ProtectedRoute'
+import StoreList from '../components/pages/StoreList'
+import AppLayout from '../components/layout/AppLayout'
+---
+
+<BaseLayout title="Mis Locales">
+<ProtectedRoute client:load requiredRole="STORE_ADMIN">
+  <AppLayout client:load title="Mis Locales">
+    <StoreList client:load />
+  </AppLayout>
+</ProtectedRoute>
+</BaseLayout>

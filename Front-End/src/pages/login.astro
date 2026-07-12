@@ -3,6 +3,7 @@ import BaseLayout from '../layouts/BaseLayout.astro'
 import LoginForm from '../components/auth/LoginForm'
 ---
 
+<BaseLayout title="Login - HX Delivery">
 <script is:inline>
   const token = localStorage.getItem('auth_token')
   if (token) {
@@ -35,6 +36,5 @@ import LoginForm from '../components/auth/LoginForm'
   }
 </script>
 
-<BaseLayout>
-  <LoginForm client:load />
+<LoginForm client:load />
 </BaseLayout>

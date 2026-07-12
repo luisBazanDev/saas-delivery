@@ -18,6 +18,11 @@ export default defineConfig({
     optimizeDeps: {
       include: ['react', 'react-dom', 'react/jsx-dev-runtime'],
     },
+    resolve: {
+      alias: {
+        '@': '/src',
+      },
+    },
   },
   build: {
     inlineStylesheets: 'always',

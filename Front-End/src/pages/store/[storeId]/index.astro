@@ -2,10 +2,15 @@
 import BaseLayout from '../../../layouts/BaseLayout.astro'
 import ProtectedRoute from '../../../components/auth/ProtectedRoute'
 import StoreDashboard from '../../../components/pages/StoreDashboard'
+import AppLayout from '../../../components/layout/AppLayout'
+
+const storeId = Astro.params.storeId || ''
 ---
 
-<BaseLayout>
-  <ProtectedRoute client:load requiredRole="STORE_DELIVERY">
-    <StoreDashboard client:load />
-  </ProtectedRoute>
+<BaseLayout title="Dashboard del Local">
+<ProtectedRoute client:load requiredRole="STORE_MANAGER">
+  <AppLayout client:load title="Dashboard del Local" storeId={storeId}>
+    <StoreDashboard client:load storeId={storeId} />
+  </AppLayout>
+</ProtectedRoute>
 </BaseLayout>

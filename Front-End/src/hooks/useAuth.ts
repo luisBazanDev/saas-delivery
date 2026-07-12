@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
-import { isAuthenticated, removeToken, getToken, decodeToken, setUser, getUser, setTokenCookie, removeTokenCookie } from '../lib/auth'
-import { api } from '../lib/api'
-import type { AuthResponse, User } from '../lib/types'
+import { isAuthenticated, removeToken, getToken, decodeToken, setUser, setTokenCookie, removeTokenCookie } from '../lib/auth'
+import type { User } from '../lib/types'
 
 export function useAuth() {
   const [user, setUserState] = useState<User | null>(null)
@@ -10,24 +9,36 @@ export function useAuth() {
   const login = useCallback(async (username: string, password: string) => {
     setLoading(true)
     try {
-      const res = await api.post<AuthResponse>('/auth/login', { username, password })
-      const token = res.bearerToken || res.token
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      })
+
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}))
+        throw new Error(body.error || 'Error al iniciar sesión')
+      }
+
+      const data = await res.json()
+      const token = data.bearerToken
       if (token) {
         localStorage.setItem('auth_token', token)
         setTokenCookie(token)
         const payload = decodeToken(token)
         if (payload) {
           const userData: User = {
-            id: res.id || payload.sub,
-            username: res.username || payload.username || username,
-            role: res.role || payload.role,
-            store_id: res.store_id || payload.store_id,
+            id: payload.sub,
+            username: payload.username,
+            role: payload.role,
+            store_id: payload.store_id,
+            is_active: true,
           }
           setUser(userData)
           setUserState(userData)
         }
       }
-      return res
+      return data
     } finally {
       setLoading(false)
     }
@@ -54,6 +65,7 @@ export function useAuth() {
           username: payload.username,
           role: payload.role,
           store_id: payload.store_id,
+          is_active: true,
         }
         setUser(userData)
         setUserState(userData)

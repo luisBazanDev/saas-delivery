@@ -1,5 +1,11 @@
 ---
 import '../styles/global.css'
+
+interface Props {
+  title?: string
+}
+
+const { title = 'HX Delivery' } = Astro.props
 ---
 
 <!doctype html>
@@ -7,11 +13,8 @@ import '../styles/global.css'
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="generator" content={Astro.generator} />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="referrer" content="strict-origin-when-cross-origin" />
-    <title>SaaS Delivery</title>
+    <meta name="description" content="Sistema de gestión de pedidos y entregas" />
+    <title>{title}</title>
   </head>
   <body>
     <slot />

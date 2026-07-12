@@ -1,4 +1,4 @@
-import type { User, UserRole } from './types'
+import type { UserRole, DecodedToken } from './types'
 
 const TOKEN_KEY = 'auth_token'
 const USER_KEY = 'auth_user'
@@ -13,7 +13,7 @@ function isBrowser(): boolean {
 
 export function setTokenCookie(token: string): void {
   if (!isBrowser()) return
-  document.cookie = `${COOKIE_NAME}=${token}; path=/; max-age=${COOKIE_MAX_AGE}; SameSite=Lax; Secure`
+  document.cookie = `${COOKIE_NAME}=${token}; path=/; max-age=${COOKIE_MAX_AGE}; SameSite=Lax`
 }
 
 export function getTokenCookie(): string | null {
@@ -45,18 +45,18 @@ export function removeToken(): void {
   localStorage.removeItem(LAST_ACTIVITY_KEY)
 }
 
-export function getUser(): User | null {
+export function getUser(): { id: number; username: string; role: UserRole; store_id?: number } | null {
   if (!isBrowser()) return null
   const userStr = localStorage.getItem(USER_KEY)
   if (!userStr) return null
   try {
-    return JSON.parse(userStr) as User
+    return JSON.parse(userStr)
   } catch {
     return null
   }
 }
 
-export function setUser(user: User): void {
+export function setUser(user: { id: number; username: string; role: UserRole; store_id?: number }): void {
   if (!isBrowser()) return
   localStorage.setItem(USER_KEY, JSON.stringify(user))
   updateLastActivity()
@@ -65,37 +65,31 @@ export function setUser(user: User): void {
 export function isAuthenticated(): boolean {
   const token = getToken()
   if (!token) return false
-
   const payload = decodeToken(token)
   if (!payload) return false
-
   const now = Math.floor(Date.now() / 1000)
   if (payload.exp && payload.exp < now) {
     removeToken()
     return false
   }
-
   return true
 }
 
 export function hasRole(requiredRole: string): boolean {
   const user = getUser()
   if (!user) return false
-
   const roleHierarchy: Record<UserRole, number> = {
     ADMIN: 100,
     STORE_ADMIN: 50,
     STORE_MANAGER: 30,
     STORE_DELIVERY: 10,
   }
-
   const userLevel = roleHierarchy[user.role] || 0
   const requiredLevel = roleHierarchy[requiredRole as UserRole] || 0
-
   return userLevel >= requiredLevel
 }
 
-export function decodeToken(token: string): { sub: number; username: string; role: UserRole; store_id?: number; exp: number } | null {
+export function decodeToken(token: string): DecodedToken | null {
   try {
     const base64Url = token.split('.')[1]
     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')

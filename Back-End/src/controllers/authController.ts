@@ -11,23 +11,6 @@ const __dirname = path.dirname(__filename)
 
 const privateKey = fs.readFileSync(path.join(__dirname, '../../private/private.pem'), 'utf-8')
 
-export async function register(req: Request, res: Response) {
-  const { username, password } = req.body as { username: string; password: string }
-  if (!username || !password) 
-    return res.status(400).json({ error: 'username and password required' })
-
-  const existing = await User.findOne({ where: { username } })
-  if (existing) 
-    return res.status(409).json({ error: 'user exists' })
-
-  const hash = await argon2.hash(password)
-
-  const user = await User.create({ username, password: hash, role: 'ADMIN' as any })
-  const token = jwt.sign({ sub: user.id, username: user.username, role: user.role, store_id: user.store_id }, privateKey, { algorithm: 'RS256', expiresIn: '1h' })
-
-  return res.status(201).json({ id: user.id, username: user.username, role: user.role, store_id: user.store_id, token })
-}
-
 export async function login(req: Request, res: Response) {
   const { username, password } = req.body as { username: string; password: string }
   if (!username || !password) 

@@ -1,6 +1,7 @@
 {
 	"scripts": {
-		"server": "tsx index.ts"
+		"server": "tsx index.ts",
+		"seed": "tsx src/seeders/run-seeder.ts"
 	},
 	"type": "commonjs",
 	"dependencies": {

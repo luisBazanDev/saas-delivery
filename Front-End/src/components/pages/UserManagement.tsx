@@ -1,9 +1,22 @@
 import { useState, useEffect } from 'react'
 import { api } from '../../lib/api'
+import { getUser } from '../../lib/auth'
 import type { User, UserRole, UserListResponse } from '../../lib/types'
 import { Plus, Pencil, Trash2, Users } from 'lucide-react'
 
-const ROLES: UserRole[] = ['STORE_ADMIN', 'STORE_MANAGER', 'STORE_DELIVERY', 'STORE_CHEF']
+const ROLE_LEVEL: Record<string, number> = {
+  ADMIN: 100,
+  STORE_ADMIN: 50,
+  STORE_MANAGER: 30,
+  STORE_CHEF: 20,
+  STORE_DELIVERY: 10,
+}
+
+function getAvailableRoles(userRole: string): UserRole[] {
+  const level = ROLE_LEVEL[userRole] ?? 0
+  const allRoles: UserRole[] = ['STORE_ADMIN', 'STORE_MANAGER', 'STORE_CHEF', 'STORE_DELIVERY']
+  return allRoles.filter((r) => ROLE_LEVEL[r] <= level)
+}
 
 export default function UserManagement() {
   const [users, setUsers] = useState<User[]>([])
@@ -14,6 +27,9 @@ export default function UserManagement() {
   const [editing, setEditing] = useState<User | null>(null)
   const [form, setForm] = useState({ username: '', password: '', email: '', phone: '', role: 'STORE_MANAGER' as UserRole, store_id: undefined as number | undefined })
   const [submitting, setSubmitting] = useState(false)
+
+  const currentUser = getUser()
+  const availableRoles = getAvailableRoles(currentUser?.role || '')
 
   useEffect(() => { fetchUsers() }, [page])
 
@@ -49,7 +65,7 @@ export default function UserManagement() {
   }
 
   function resetForm() {
-    setForm({ username: '', password: '', email: '', phone: '', role: 'STORE_MANAGER', store_id: undefined })
+    setForm({ username: '', password: '', email: '', phone: '', role: availableRoles[0] || 'STORE_MANAGER', store_id: undefined })
     setEditing(null)
     setShowForm(false)
   }
@@ -118,7 +134,7 @@ export default function UserManagement() {
               <div>
                 <label className="block text-[12px] text-text-secondary uppercase tracking-[1px] mb-1.5">Rol *</label>
                 <select value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value as UserRole })} className="w-full bg-bg-base border border-border px-3 py-2.5 rounded-lg text-text-primary outline-none focus:border-accent text-[14px]" required>
-                  {ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
+                  {availableRoles.map((r) => <option key={r} value={r}>{r}</option>)}
                 </select>
               </div>
             </div>

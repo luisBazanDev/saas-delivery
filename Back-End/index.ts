@@ -37,8 +37,6 @@ app.use(requestLogger)
 app.use('/api/health', healthRoutes)
 app.use('/api/auth', authRoutes)
 app.use('/api/products', productRoutes)
-app.use('/api/stores', storeRoutes)
-app.use('/api/orders', orderRoutes)
 app.use('/api/order-products', orderProductRoutes)
 app.use('/api', adminRoutes)
 
@@ -49,6 +47,8 @@ app.use('/api/stores/:id/orders', storeOrderRoutes)
 app.use('/api/stores/:id/kitchen', kitchenRoutes)
 app.use('/api/stores/:id/delivery', deliveryRoutes)
 app.use('/api/stores/:id/reports', reportRoutes)
+app.use('/api/stores', storeRoutes)
+app.use('/api/orders', orderRoutes)
 
 app.use(errorHandler)
 

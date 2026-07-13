@@ -18,7 +18,6 @@ WORKDIR /app
 COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/public ./public
 
 ENV HOST=0.0.0.0
 ENV PORT=4321

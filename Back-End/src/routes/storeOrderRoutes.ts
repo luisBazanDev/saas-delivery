@@ -12,7 +12,7 @@ const router = Router()
 
 router.get('/', authMiddleware, requireAnyRole(['ADMIN', 'STORE_ADMIN', 'STORE_MANAGER', 'STORE_CHEF']), listOrders)
 router.post('/', authMiddleware, requireAnyRole(['ADMIN', 'STORE_ADMIN', 'STORE_MANAGER']), createOrder)
-router.put('/:code/status', authMiddleware, requireAnyRole(['ADMIN', 'STORE_ADMIN', 'STORE_MANAGER']), updateOrderStatus)
-router.delete('/:code', authMiddleware, requireAnyRole(['ADMIN', 'STORE_ADMIN']), deleteOrder)
+router.put('/:id/status', authMiddleware, requireAnyRole(['ADMIN', 'STORE_ADMIN', 'STORE_MANAGER']), updateOrderStatus)
+router.delete('/:id', authMiddleware, requireAnyRole(['ADMIN', 'STORE_ADMIN']), deleteOrder)
 
 export default router

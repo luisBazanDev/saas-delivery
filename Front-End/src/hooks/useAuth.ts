@@ -6,13 +6,13 @@ export function useAuth() {
   const [user, setUserState] = useState<User | null>(null)
   const [loading, setLoading] = useState(false)
 
-  const login = useCallback(async (username: string, password: string) => {
+  const login = useCallback(async (name: string, password: string) => {
     setLoading(true)
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ name, password }),
       })
 
       if (!res.ok) {
@@ -29,10 +29,9 @@ export function useAuth() {
         if (payload) {
           const userData: User = {
             id: payload.sub,
-            username: payload.username,
-            role: payload.role,
+            name: payload.name,
+            role_name: payload.role_name,
             store_id: payload.store_id,
-            is_active: true,
           }
           setUser(userData)
           setUserState(userData)
@@ -62,10 +61,9 @@ export function useAuth() {
       if (payload) {
         const userData: User = {
           id: payload.sub,
-          username: payload.username,
-          role: payload.role,
+          name: payload.name,
+          role_name: payload.role_name,
           store_id: payload.store_id,
-          is_active: true,
         }
         setUser(userData)
         setUserState(userData)

@@ -100,14 +100,14 @@ export default function DeliveryView({ storeId }: DeliveryViewProps) {
         {orders.length > 1 && (
           <div className="px-5 py-3 border-t border-border max-h-[150px] overflow-y-auto">
             <p className="text-[11px] text-text-secondary uppercase tracking-[1px] mb-2">Otros Pedidos</p>
-            {orders.filter((o) => o.code !== currentOrder?.code).map((order) => (
+            {orders.filter((o) => o.id !== currentOrder?.id).map((order) => (
               <button
-                key={order.code}
+                key={order.id}
                 onClick={() => setCurrentOrder(order)}
                 className="w-full text-left px-3 py-2 rounded text-[13px] text-text-primary hover:bg-bg-elevated transition-colors mb-1"
               >
-                <span className="text-accent font-medium">{order.code}</span>
-                <span className="text-text-secondary ml-2">{order.address || 'Sin dirección'}</span>
+                <span className="text-accent font-medium">{order.code || `#${order.id}`}</span>
+                <span className="text-text-secondary ml-2">{order.delivery_address || 'Sin dirección'}</span>
               </button>
             ))}
           </div>

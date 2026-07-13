@@ -12,19 +12,19 @@ const __dirname = path.dirname(__filename)
 const privateKey = fs.readFileSync(path.join(__dirname, '../../private/private.pem'), 'utf-8')
 
 export async function login(req: Request, res: Response) {
-  const { username, password } = req.body as { username: string; password: string }
-  if (!username || !password) 
-    return res.status(400).json({ error: 'username and password required' })
+  const { name, password } = req.body as { name: string; password: string }
+  if (!name || !password) 
+    return res.status(400).json({ error: 'name and password required' })
 
-  const user = await User.findOne({ where: { username } })
+  const user = await User.findOne({ where: { name } })
   if (!user) 
     return res.status(401).json({ error: 'invalid credentials' })
 
-  const ok = await argon2.verify(user.password, password)
+  const ok = await argon2.verify(user.password_hash, password)
   if (!ok)
     return res.status(401).json({ error: 'invalid credentials' })
 
-  const token = jwt.sign({ sub: user.id, username: user.username, role: user.role, store_id: user.store_id }, privateKey, { algorithm: 'RS256', expiresIn: '1h' })
+  const token = jwt.sign({ sub: user.id, name: user.name, role_name: user.role_name, store_id: user.store_id }, privateKey, { algorithm: 'RS256', expiresIn: '1h' })
   
   return res.status(200).json({ bearerToken: token, store_id: user.store_id })
 }

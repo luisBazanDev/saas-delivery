@@ -7,11 +7,9 @@ import './src/models/associations'
 import healthRoutes from './src/routes/healthRoutes'
 import authRoutes from './src/routes/authRoutes'
 import productRoutes from './src/routes/productRoutes'
-import categoryRoutes from './src/routes/categoryRoutes'
 import storeRoutes from './src/routes/storeRoutes'
 import orderRoutes from './src/routes/orderRoutes'
 import orderProductRoutes from './src/routes/orderProductRoutes'
-import paymentRoutes from './src/routes/paymentRoutes'
 import adminRoutes from './src/routes/adminRoutes'
 
 import adminStoreRoutes from './src/routes/adminStoreRoutes'
@@ -39,11 +37,9 @@ app.use(requestLogger)
 app.use('/api/health', healthRoutes)
 app.use('/api/auth', authRoutes)
 app.use('/api/products', productRoutes)
-app.use('/api/categories', categoryRoutes)
 app.use('/api/stores', storeRoutes)
 app.use('/api/orders', orderRoutes)
 app.use('/api/order-products', orderProductRoutes)
-app.use('/api/payments', paymentRoutes)
 app.use('/api', adminRoutes)
 
 app.use('/api/admin/stores', adminStoreRoutes)

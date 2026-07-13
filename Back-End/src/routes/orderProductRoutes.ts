@@ -13,8 +13,8 @@ const router = Router()
 
 router.get('/', authMiddleware, requireRole('STORE_ADMIN'), listOrderProducts)
 router.post('/', authMiddleware, requireRole('STORE_ADMIN'), createOrderProduct)
-router.get('/:order_code/:product_id', authMiddleware, requireRole('STORE_ADMIN'), getOrderProduct)
-router.put('/:order_code/:product_id', authMiddleware, requireRole('STORE_ADMIN'), updateOrderProduct)
-router.delete('/:order_code/:product_id', authMiddleware, requireRole('STORE_ADMIN'), deleteOrderProduct)
+router.get('/:order_id/:product_id', authMiddleware, requireRole('STORE_ADMIN'), getOrderProduct)
+router.put('/:order_id/:product_id', authMiddleware, requireRole('STORE_ADMIN'), updateOrderProduct)
+router.delete('/:order_id/:product_id', authMiddleware, requireRole('STORE_ADMIN'), deleteOrderProduct)
 
 export default router

@@ -20,7 +20,7 @@ function getVisibleRoles(userRole: string): string[] {
 
 export async function listUsers(req: Request, res: Response) {
   const authUser = (req as any).user
-  const authRole = authUser?.role
+  const authRole = authUser?.role_name
   const authStoreId = authUser?.store_id
 
   const page = Math.max(1, Number(req.query.page) || 1)
@@ -34,7 +34,7 @@ export async function listUsers(req: Request, res: Response) {
 
   if (authRole !== 'ADMIN') {
     const visibleRoles = getVisibleRoles(authRole)
-    where.role = visibleRoles
+    where.role_name = visibleRoles
   }
 
   if (authStoreId && authRole !== 'ADMIN') {
@@ -43,14 +43,14 @@ export async function listUsers(req: Request, res: Response) {
     where.store_id = storeId
   }
 
-  if (role) where.role = role
+  if (role) where.role_name = role
 
   const { count, rows } = await User.findAndCountAll({
     where,
     limit,
     offset,
     order: [['created_at', 'DESC']],
-    attributes: { exclude: ['password'] },
+    attributes: { exclude: ['password_hash'] },
     include: [{ model: Store, attributes: ['id', 'name'] }],
   })
 
@@ -67,19 +67,19 @@ export async function listUsers(req: Request, res: Response) {
 
 export async function getUser(req: Request, res: Response) {
   const authUser = (req as any).user
-  const authRole = authUser?.role
+  const authRole = authUser?.role_name
   const authStoreId = authUser?.store_id
 
   const id = Number(req.params.id)
   const user = await User.findByPk(id, {
-    attributes: { exclude: ['password'] },
+    attributes: { exclude: ['password_hash'] },
     include: [{ model: Store, attributes: ['id', 'name'] }],
   })
   if (!user) return res.status(404).json({ error: 'User not found' })
 
   if (authRole !== 'ADMIN') {
     const visibleRoles = getVisibleRoles(authRole)
-    if (!visibleRoles.includes(user.role)) {
+    if (!visibleRoles.includes(user.role_name)) {
       return res.status(403).json({ error: 'Access denied' })
     }
     if (authStoreId && user.store_id !== authStoreId) {
@@ -92,49 +92,47 @@ export async function getUser(req: Request, res: Response) {
 
 export async function createUser(req: Request, res: Response) {
   const authUser = (req as any).user
-  const authRole = authUser?.role
+  const authRole = authUser?.role_name
   const authStoreId = authUser?.store_id
 
-  const { username, password, email, phone, role, store_id } = req.body
-  if (!username || !password || !role) {
-    return res.status(400).json({ error: 'username, password, and role are required' })
+  const { name, password, email, role_name, store_id } = req.body
+  if (!name || !password || !role_name) {
+    return res.status(400).json({ error: 'name, password, and role_name are required' })
   }
 
   const validRoles = ['STORE_ADMIN', 'STORE_MANAGER', 'STORE_DELIVERY', 'STORE_CHEF']
-  if (!validRoles.includes(role)) {
+  if (!validRoles.includes(role_name)) {
     return res.status(400).json({ error: `Invalid role. Must be one of: ${validRoles.join(', ')}` })
   }
 
   if (authRole !== 'ADMIN') {
     const visibleRoles = getVisibleRoles(authRole)
-    if (!visibleRoles.includes(role)) {
+    if (!visibleRoles.includes(role_name)) {
       return res.status(403).json({ error: 'Cannot create user with higher role' })
     }
   }
 
   const finalStoreId = (authRole !== 'ADMIN' && authStoreId) ? authStoreId : store_id
 
-  const existing = await User.findOne({ where: { username } })
-  if (existing) return res.status(409).json({ error: 'Username already exists' })
+  const existing = await User.findOne({ where: { name } })
+  if (existing) return res.status(409).json({ error: 'Name already exists' })
 
   const hash = await argon2.hash(password)
   const user = await User.create({
-    username,
-    password: hash,
+    name,
+    password_hash: hash,
     email,
-    phone,
-    role: role as any,
+    role_name: role_name as any,
     store_id: finalStoreId,
-    is_active: true,
   })
 
-  const { password: _, ...userData } = user.toJSON()
+  const { password_hash: _, ...userData } = user.toJSON()
   return res.status(201).json(userData)
 }
 
 export async function updateUser(req: Request, res: Response) {
   const authUser = (req as any).user
-  const authRole = authUser?.role
+  const authRole = authUser?.role_name
   const authStoreId = authUser?.store_id
 
   const id = Number(req.params.id)
@@ -143,7 +141,7 @@ export async function updateUser(req: Request, res: Response) {
 
   if (authRole !== 'ADMIN') {
     const visibleRoles = getVisibleRoles(authRole)
-    if (!visibleRoles.includes(user.role)) {
+    if (!visibleRoles.includes(user.role_name)) {
       return res.status(403).json({ error: 'Cannot edit user with higher role' })
     }
     if (authStoreId && user.store_id !== authStoreId) {
@@ -153,25 +151,25 @@ export async function updateUser(req: Request, res: Response) {
 
   const { password, ...updateData } = req.body
 
-  if (updateData.role && authRole !== 'ADMIN') {
+  if (updateData.role_name && authRole !== 'ADMIN') {
     const visibleRoles = getVisibleRoles(authRole)
-    if (!visibleRoles.includes(updateData.role)) {
+    if (!visibleRoles.includes(updateData.role_name)) {
       return res.status(403).json({ error: 'Cannot assign higher role' })
     }
   }
 
   if (password) {
-    updateData.password = await argon2.hash(password)
+    updateData.password_hash = await argon2.hash(password)
   }
 
   await user.update(updateData)
-  const { password: _, ...userData } = user.toJSON()
+  const { password_hash: _, ...userData } = user.toJSON()
   return res.json(userData)
 }
 
 export async function deleteUser(req: Request, res: Response) {
   const authUser = (req as any).user
-  const authRole = authUser?.role
+  const authRole = authUser?.role_name
   const authStoreId = authUser?.store_id
 
   const id = Number(req.params.id)
@@ -180,7 +178,7 @@ export async function deleteUser(req: Request, res: Response) {
 
   if (authRole !== 'ADMIN') {
     const visibleRoles = getVisibleRoles(authRole)
-    if (!visibleRoles.includes(user.role)) {
+    if (!visibleRoles.includes(user.role_name)) {
       return res.status(403).json({ error: 'Cannot delete user with higher role' })
     }
     if (authStoreId && user.store_id !== authStoreId) {
@@ -192,26 +190,3 @@ export async function deleteUser(req: Request, res: Response) {
   return res.status(204).send()
 }
 
-export async function toggleUserStatus(req: Request, res: Response) {
-  const authUser = (req as any).user
-  const authRole = authUser?.role
-  const authStoreId = authUser?.store_id
-
-  const id = Number(req.params.id)
-  const user = await User.findByPk(id)
-  if (!user) return res.status(404).json({ error: 'User not found' })
-
-  if (authRole !== 'ADMIN') {
-    const visibleRoles = getVisibleRoles(authRole)
-    if (!visibleRoles.includes(user.role)) {
-      return res.status(403).json({ error: 'Cannot toggle user with higher role' })
-    }
-    if (authStoreId && user.store_id !== authStoreId) {
-      return res.status(403).json({ error: 'Cannot toggle user from different store' })
-    }
-  }
-
-  await user.update({ is_active: !user.is_active })
-  const { password: _, ...userData } = user.toJSON()
-  return res.json(userData)
-}

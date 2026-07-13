@@ -9,7 +9,6 @@ import {
 
 import { sequelize } from "../repositories"
 import { Store } from "./store.model"
-import { Category } from "./category.model"
 
 export class Product extends Model<
   InferAttributes<Product>,
@@ -21,13 +20,13 @@ export class Product extends Model<
 
   declare name: string
 
-  declare description: string
-
   declare price: number
 
-  declare stock: number
+  declare is_available: boolean
 
-  declare category_id: ForeignKey<Category["id"]>
+  declare description?: string
+
+  declare stock?: number
 }
 
 Product.init(
@@ -52,23 +51,24 @@ Product.init(
       allowNull: false,
     },
 
-    description: {
-      type: DataTypes.TEXT,
-      allowNull: false,
-    },
-
-    category_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
     price: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
     },
+
+    is_available: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
+      allowNull: false,
+    },
+
+    description: {
+      type: DataTypes.TEXT,
+    },
+
     stock: {
       type: DataTypes.INTEGER,
       defaultValue: 0,
-      allowNull: false,
     }
   },
   {

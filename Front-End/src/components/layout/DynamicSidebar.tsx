@@ -108,7 +108,7 @@ function resolveHref(href: string, storeId?: string): string {
 export default function DynamicSidebar({ currentPath, storeId }: DynamicSidebarProps) {
   const [open, setOpen] = useState(false)
   const user = getUser()
-  const role = user?.role || 'ADMIN'
+  const role = user?.role_name || 'ADMIN'
   const config = roleConfig[role] || roleConfig.ADMIN
 
   function handleLogout() {
@@ -167,10 +167,10 @@ export default function DynamicSidebar({ currentPath, storeId }: DynamicSidebarP
         <div className="px-5 py-5 border-t border-border">
           <div className="flex items-center gap-2.5 mb-4">
             <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center">
-              <span className="text-accent text-sm font-semibold">{user?.username?.charAt(0).toUpperCase() || 'U'}</span>
+              <span className="text-accent text-sm font-semibold">{user?.name?.charAt(0).toUpperCase() || 'U'}</span>
             </div>
             <div>
-              <p className="text-[13px] font-semibold text-text-primary">{user?.username || 'Usuario'}</p>
+              <p className="text-[13px] font-semibold text-text-primary">{user?.name || 'Usuario'}</p>
               <p className="text-[11px] text-text-secondary">{config.name}</p>
             </div>
           </div>

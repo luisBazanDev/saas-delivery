@@ -19,7 +19,7 @@ export async function getKitchenOrders(req: Request, res: Response) {
         include: [{ model: Product, attributes: ['id', 'name', 'price'] }],
       },
     ],
-    order: [['start_time', 'ASC']],
+    order: [['created_at', 'ASC']],
   })
 
   return res.json({ orders })
@@ -27,24 +27,17 @@ export async function getKitchenOrders(req: Request, res: Response) {
 
 export async function markOrderReady(req: Request, res: Response) {
   const storeId = Number(req.params.id)
-  const orderCode = Array.isArray(req.params.code) ? req.params.code[0] : req.params.code
+  const orderId = Number(req.params.id)
 
-  const order = await Order.findOne({ where: { code: orderCode, store_id: storeId } })
+  const order = await Order.findOne({ where: { id: orderId, store_id: storeId } })
   if (!order) return res.status(404).json({ error: 'Order not found' })
 
   const nextStatus = order.status === 'PENDING' ? 'IN_PROGRESS' : 'DONE'
   const updateData: any = { status: nextStatus }
 
-  if (nextStatus === 'IN_PROGRESS' && !order.start_time) {
-    updateData.start_time = new Date()
-  }
-  if (nextStatus === 'DONE') {
-    updateData.end_time = new Date()
-  }
-
   await order.update(updateData)
 
-  const updated = await Order.findByPk(orderCode, {
+  const updated = await Order.findByPk(orderId, {
     include: [
       {
         model: OrderProduct,
@@ -58,26 +51,26 @@ export async function markOrderReady(req: Request, res: Response) {
 
 export async function cancelOrderReady(req: Request, res: Response) {
   const storeId = Number(req.params.id)
-  const orderCode = Array.isArray(req.params.code) ? req.params.code[0] : req.params.code
+  const orderId = Number(req.params.id)
 
-  const order = await Order.findOne({ where: { code: orderCode, store_id: storeId } })
+  const order = await Order.findOne({ where: { id: orderId, store_id: storeId } })
   if (!order) return res.status(404).json({ error: 'Order not found' })
 
   if (order.status !== 'DONE') return res.status(400).json({ error: 'Order is not marked as done' })
 
-  if (!order.end_time) return res.status(400).json({ error: 'Order has no end_time' })
+  if (!order.created_at) return res.status(400).json({ error: 'Order has no created_at' })
 
-  const endTimestamp = new Date(order.end_time).getTime()
+  const createdTimestamp = new Date(order.created_at).getTime()
   const now = Date.now()
   const fiveMinutesMs = 5 * 60 * 1000
 
-  if (now - endTimestamp > fiveMinutesMs) {
+  if (now - createdTimestamp > fiveMinutesMs) {
     return res.status(403).json({ error: 'Cancellation window expired (5 minutes)' })
   }
 
-  await order.update({ status: 'IN_PROGRESS', end_time: undefined as any })
+  await order.update({ status: 'IN_PROGRESS' })
 
-  const updated = await Order.findByPk(orderCode, {
+  const updated = await Order.findByPk(orderId, {
     include: [
       {
         model: OrderProduct,

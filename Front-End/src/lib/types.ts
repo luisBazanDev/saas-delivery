@@ -2,9 +2,20 @@ export type UserRole = 'ADMIN' | 'STORE_ADMIN' | 'STORE_MANAGER' | 'STORE_DELIVE
 
 export type OrderStatus = 'PENDING' | 'IN_PROGRESS' | 'DONE' | 'IN_TRANSIT' | 'DELIVERED'
 
+export interface Subscription {
+  id: number
+  plan_name: string
+  max_users: number
+  is_active: boolean
+  expires_at: string
+  created_at?: string
+}
+
 export interface Store {
   id: number
   name: string
+  ruc?: string
+  subscription_id?: number
   address?: string
   phone?: string
   email?: string
@@ -14,27 +25,35 @@ export interface Store {
   is_active: boolean
   created_at?: string
   updated_at?: string
+  Subscription?: Subscription
 }
 
 export interface User {
   id: number
-  username: string
+  name: string
   email?: string
-  phone?: string
-  role: UserRole
+  role_name: UserRole
   store_id?: number
-  is_active: boolean
   created_at?: string
-  updated_at?: string
   Store?: Store
+}
+
+export interface Product {
+  id: number
+  store_id: number
+  name: string
+  price: number
+  is_available: boolean
+  description?: string
+  stock?: number
 }
 
 export interface OrderProduct {
   id: number
-  order_code: string
+  order_id: number
   product_id: number
-  amount: number
-  price: number
+  quantity: number
+  subtotal: number
   Product?: {
     id: number
     name: string
@@ -43,26 +62,20 @@ export interface OrderProduct {
 }
 
 export interface Order {
-  code: string
+  id: number
+  code?: string
   store_id: number
   status: OrderStatus
   customer_name?: string
-  customer_phone?: string
-  address?: string
-  total?: number
-  payment_id?: number
+  phone?: string
+  delivery_address?: string
+  total_amount?: number
   delivery_user_id?: number
-  lat?: number
-  lon?: number
-  start_time?: string
-  end_time?: string
   created_at?: string
-  updated_at?: string
   OrderProducts?: OrderProduct[]
   deliveryUser?: {
     id: number
-    username: string
-    phone?: string
+    name: string
   }
 }
 
@@ -73,8 +86,8 @@ export interface AuthResponse {
 
 export interface DecodedToken {
   sub: number
-  username: string
-  role: UserRole
+  name: string
+  role_name: UserRole
   store_id?: number
   exp: number
 }
@@ -124,7 +137,7 @@ export interface ReportSummary {
     daily_average: number
     status_breakdown: Record<string, number>
     top_products: Array<{ name: string; total_sold: number; total_revenue: number }>
-    delivery_stats: Array<{ id: number; username: string; deliveries: number }>
+    delivery_stats: Array<{ id: number; name: string; deliveries: number }>
   }
 }
 

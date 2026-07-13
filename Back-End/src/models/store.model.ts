@@ -10,6 +10,8 @@ import { sequelize } from '../repositories'
 export class Store extends Model<InferAttributes<Store>, InferCreationAttributes<Store>> {
     declare id: CreationOptional<number>
     declare name: string
+    declare ruc?: string
+    declare subscription_id?: number
     declare address?: string
     declare phone?: string
     declare email?: string
@@ -31,6 +33,16 @@ Store.init(
         name: {
             type: DataTypes.STRING(255),
             allowNull: false,
+        },
+        ruc: {
+            type: DataTypes.STRING(50),
+        },
+        subscription_id: {
+            type: DataTypes.INTEGER,
+            references: {
+                model: 'subscription',
+                key: 'id',
+            },
         },
         address: {
             type: DataTypes.STRING(255),

@@ -27,16 +27,16 @@ function isTokenValid(token: string): boolean {
 }
 
 function getRedirectForLoggedInUser(payload: any): string | null {
-  if (payload.role === 'ADMIN') {
+  if (payload.role_name === 'ADMIN') {
     return '/admin/stores'
   }
-  if (payload.role === 'STORE_ADMIN') {
+  if (payload.role_name === 'STORE_ADMIN') {
     return '/stores'
   }
-  if (payload.role === 'STORE_CHEF' && payload.store_id) {
+  if (payload.role_name === 'STORE_CHEF' && payload.store_id) {
     return `/store/${payload.store_id}/kitchen`
   }
-  if (payload.role === 'STORE_DELIVERY' && payload.store_id) {
+  if (payload.role_name === 'STORE_DELIVERY' && payload.store_id) {
     return `/store/${payload.store_id}/delivery`
   }
   if (payload.store_id) {
@@ -78,7 +78,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
       return context.redirect('/login')
     }
 
-    if (payload && !payload.store_id && payload.role !== 'ADMIN') {
+    if (payload && !payload.store_id && payload.role_name !== 'ADMIN') {
       const response = context.redirect('/login')
       response.headers.append('set-cookie', 'auth_token=; path=/; max-age=0; SameSite=Lax')
       return response
@@ -88,11 +88,11 @@ export const onRequest = defineMiddleware(async (context, next) => {
       return context.redirect(`/store/${payload.store_id}/orders`)
     }
 
-    if (payload && payload.role === 'STORE_CHEF' && subPath !== 'kitchen') {
+    if (payload && payload.role_name === 'STORE_CHEF' && subPath !== 'kitchen') {
       return context.redirect(`/store/${payload.store_id}/kitchen`)
     }
 
-    if (payload && payload.role === 'STORE_DELIVERY' && subPath !== 'delivery') {
+    if (payload && payload.role_name === 'STORE_DELIVERY' && subPath !== 'delivery') {
       return context.redirect(`/store/${payload.store_id}/delivery`)
     }
   }

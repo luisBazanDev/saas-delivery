@@ -12,15 +12,12 @@ import { UserRole } from './user-role.enum'
 
 export class User extends Model<InferAttributes<User>, InferCreationAttributes<User>> {
     declare id: CreationOptional<number>
-    declare username: string
-    declare password: string
+    declare name: string
+    declare password_hash: string
     declare email?: string
-    declare phone?: string
-    declare role: UserRole
+    declare role_name: UserRole
     declare store_id: ForeignKey<Store['id']> | null
-    declare is_active: CreationOptional<boolean>
     declare created_at: CreationOptional<Date>
-    declare updated_at: CreationOptional<Date>
 }
 
 User.init({
@@ -29,21 +26,19 @@ User.init({
         autoIncrement: true,
         primaryKey: true,
     },
-    username: {
+    name: {
         type: DataTypes.STRING(255),
         allowNull: false,
     },
-    password: {
+    password_hash: {
         type: DataTypes.STRING(255),
         allowNull: false,
     },
     email: {
         type: DataTypes.STRING(255),
+        unique: true,
     },
-    phone: {
-        type: DataTypes.STRING(50),
-    },
-    role: {
+    role_name: {
         type: DataTypes.ENUM("ADMIN", "STORE_MANAGER", "STORE_ADMIN", "STORE_DELIVERY", "STORE_CHEF"),
         allowNull: false,
     },
@@ -55,15 +50,7 @@ User.init({
             key: 'id'
         }
     },
-    is_active: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: true,
-    },
     created_at: {
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
-    },
-    updated_at: {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW,
     },

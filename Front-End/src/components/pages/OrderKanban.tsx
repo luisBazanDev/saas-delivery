@@ -95,10 +95,10 @@ export default function OrderKanban({ storeId }: OrderKanbanProps) {
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
-  async function handleDelete(code: string) {
+  async function handleDelete(id: number) {
     if (!confirm('¿Eliminar esta orden?')) return
     try {
-      await api.delete(`/stores/${storeId}/orders/${code}`)
+      await api.delete(`/stores/${storeId}/orders/${id}`)
       fetchOrders()
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Error al eliminar')
@@ -115,7 +115,7 @@ export default function OrderKanban({ storeId }: OrderKanbanProps) {
     if (!next) return
 
     try {
-      await api.put(`/stores/${storeId}/orders/${order.code}/status`, { status: next })
+      await api.put(`/stores/${storeId}/orders/${order.id}/status`, { status: next })
       fetchOrders()
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Error al actualizar')
@@ -124,20 +124,20 @@ export default function OrderKanban({ storeId }: OrderKanbanProps) {
 
   function renderCard(order: Order) {
     return (
-      <div key={order.code} className="bg-bg-base border border-border p-4 rounded-lg relative">
-        <button onClick={() => handleDelete(order.code)} className="absolute top-2.5 right-2.5 text-text-secondary cursor-pointer hover:text-danger" title="Eliminar Orden">
+      <div key={order.id} className="bg-bg-base border border-border p-4 rounded-lg relative">
+        <button onClick={() => handleDelete(order.id)} className="absolute top-2.5 right-2.5 text-text-secondary cursor-pointer hover:text-danger" title="Eliminar Orden">
           <Trash2 size={14} />
         </button>
-        <span className="text-accent font-bold text-[13px]">{order.code}</span>
+        <span className="text-accent font-bold text-[13px]">{order.code || `#${order.id}`}</span>
         {order.customer_name && <p className="mt-2 text-[13px] text-text-primary">{order.customer_name}</p>}
-        {order.address && (
+        {order.delivery_address && (
           <p className="mt-1.5 text-[13px] text-text-primary flex items-center gap-1.5">
             <MapPin size={12} className="text-text-secondary" />
-            {order.address}
+            {order.delivery_address}
           </p>
         )}
-        {order.total !== undefined && order.total > 0 && (
-          <p className="mt-1.5 text-[13px] text-accent font-medium">S/ {order.total.toFixed(2)}</p>
+        {order.total_amount !== undefined && order.total_amount > 0 && (
+          <p className="mt-1.5 text-[13px] text-accent font-medium">S/ {order.total_amount.toFixed(2)}</p>
         )}
         {order.status !== 'DELIVERED' && order.status !== 'DONE' && (
           <button onClick={() => advanceStatus(order)} className="mt-3 w-full bg-accent text-bg-base border-none py-2 rounded-lg font-semibold cursor-pointer text-[12px] hover:opacity-90">

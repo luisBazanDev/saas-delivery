@@ -20,24 +20,24 @@ function signToken(payload: object) {
 }
 
 export async function createUserAsStoreAdmin(req: Request, res: Response) {
-  const { user, password, role } = req.body as { user: string; password: string; role: string }
-  if (!user || !password || !role) return res.status(400).json({ error: 'user, password, role required' })
+  const { name, password, role_name } = req.body as { name: string; password: string; role_name: string }
+  if (!name || !password || !role_name) return res.status(400).json({ error: 'name, password, role_name required' })
 
-  if (role !== 'STORE_MANAGER' && role !== 'STORE_DELIVERY') return res.status(400).json({ error: 'invalid role' })
+  if (role_name !== 'STORE_MANAGER' && role_name !== 'STORE_DELIVERY') return res.status(400).json({ error: 'invalid role' })
 
   const requester = (req as any).user
-  if (!requester || requester.role !== 'STORE_ADMIN') return res.status(403).json({ error: 'forbidden' })
+  if (!requester || requester.role_name !== 'STORE_ADMIN') return res.status(403).json({ error: 'forbidden' })
 
   const storeId = requester.store_id
   if (!storeId) return res.status(400).json({ error: 'store_id missing from requester' })
 
-  const existing = await User.findOne({ where: { username: user } })
+  const existing = await User.findOne({ where: { name } })
   if (existing) return res.status(409).json({ error: 'user exists' })
 
   const hash = await argon2.hash(password)
-  const created = await User.create({ username: user, password: hash, role: role as any, store_id: storeId })
+  const created = await User.create({ name, password_hash: hash, role_name: role_name as any, store_id: storeId })
 
-  return res.status(201).json({ id: created.id, username: created.username, role: created.role, store_id: created.store_id })
+  return res.status(201).json({ id: created.id, name: created.name, role_name: created.role_name, store_id: created.store_id })
 }
 
 export async function selectStoreAsAdmin(req: Request, res: Response) {
@@ -45,7 +45,7 @@ export async function selectStoreAsAdmin(req: Request, res: Response) {
   if (!store_id) return res.status(400).json({ error: 'store_id required' })
 
   const requester = (req as any).user
-  if (!requester || requester.role !== 'ADMIN') return res.status(403).json({ error: 'forbidden' })
+  if (!requester || requester.role_name !== 'ADMIN') return res.status(403).json({ error: 'forbidden' })
 
   const store = await Store.findByPk(store_id)
   if (!store) return res.status(404).json({ error: 'store not found' })
@@ -55,29 +55,29 @@ export async function selectStoreAsAdmin(req: Request, res: Response) {
 
   await user.update({ store_id })
 
-  const token = signToken({ sub: user.id, username: user.username, role: user.role, store_id: user.store_id })
+  const token = signToken({ sub: user.id, name: user.name, role_name: user.role_name, store_id: user.store_id })
 
   return res.status(200).json({ token, store_id: user.store_id })
 }
 
 export async function createStoreAsAdmin(req: Request, res: Response) {
   const { name, address, first_user } = req.body as any
-  if (!name || !address || !first_user || !first_user.username || !first_user.password) {
-    return res.status(400).json({ error: 'name, address and first_user{username,password} required' })
+  if (!name || !address || !first_user || !first_user.name || !first_user.password) {
+    return res.status(400).json({ error: 'name, address and first_user{name,password} required' })
   }
 
   const requester = (req as any).user
-  if (!requester || requester.role !== 'ADMIN') return res.status(403).json({ error: 'forbidden' })
+  if (!requester || requester.role_name !== 'ADMIN') return res.status(403).json({ error: 'forbidden' })
 
   const store = await Store.create({ name, address })
 
-  const existing = await User.findOne({ where: { username: first_user.username } })
-  if (existing) return res.status(409).json({ error: 'first_user.username exists' })
+  const existing = await User.findOne({ where: { name: first_user.name } })
+  if (existing) return res.status(409).json({ error: 'first_user.name exists' })
 
   const hash = await argon2.hash(first_user.password)
-  const createdUser = await User.create({ username: first_user.username, password: hash, role: 'STORE_ADMIN' as any, store_id: (store as any).id })
+  const createdUser = await User.create({ name: first_user.name, password_hash: hash, role_name: 'STORE_ADMIN' as any, store_id: (store as any).id })
 
-  const token = signToken({ sub: createdUser.id, username: createdUser.username, role: createdUser.role, store_id: createdUser.store_id })
+  const token = signToken({ sub: createdUser.id, name: createdUser.name, role_name: createdUser.role_name, store_id: createdUser.store_id })
 
-  return res.status(201).json({ store: { id: (store as any).id, name: store.name, address: store.address }, admin: { id: createdUser.id, username: createdUser.username, role: createdUser.role }, token })
+  return res.status(201).json({ store: { id: (store as any).id, name: store.name, address: store.address }, admin: { id: createdUser.id, name: createdUser.name, role_name: createdUser.role_name }, token })
 }

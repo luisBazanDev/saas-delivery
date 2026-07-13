@@ -47,7 +47,7 @@ export default function StoreDashboard({ storeId }: StoreDashboardProps) {
         <div className="h-[350px] bg-bg-elevated relative flex justify-center items-center" style={{ backgroundImage: 'radial-gradient(#222 1px, transparent 1px)', backgroundSize: '20px 20px' }}>
           {active_deliveries.length > 0 ? (
             active_deliveries.slice(0, 6).map((order, i) => (
-              <div key={order.code} className="absolute" style={{ top: `${30 + (i * 12) % 50}%`, left: `${20 + (i * 18) % 60}%` }}>
+              <div key={order.id} className="absolute" style={{ top: `${30 + (i * 12) % 50}%`, left: `${20 + (i * 18) % 60}%` }}>
                 <MapPin size={24} className="text-danger absolute -top-1 -left-1" />
                 <Bike size={20} className="text-accent" />
               </div>
@@ -74,10 +74,10 @@ export default function StoreDashboard({ storeId }: StoreDashboardProps) {
               </thead>
               <tbody>
                 {active_deliveries.map((order) => (
-                  <tr key={order.code} className="hover:bg-bg-elevated transition-colors">
-                    <td className="py-3 px-3 text-[14px] font-mono border-b border-border">{order.code}</td>
-                    <td className="py-3 px-3 text-[14px] border-b border-border">{order.deliveryUser?.username || '-'}</td>
-                    <td className="py-3 px-3 text-[14px] text-text-secondary border-b border-border">{order.address || '-'}</td>
+                  <tr key={order.id} className="hover:bg-bg-elevated transition-colors">
+                    <td className="py-3 px-3 text-[14px] font-mono border-b border-border">{order.code || order.id}</td>
+                    <td className="py-3 px-3 text-[14px] border-b border-border">{order.deliveryUser?.name || '-'}</td>
+                    <td className="py-3 px-3 text-[14px] text-text-secondary border-b border-border">{order.delivery_address || '-'}</td>
                     <td className="py-3 px-3 border-b border-border">
                       <span className="px-2 py-1 rounded text-[11px] border border-border text-text-secondary">{order.status}</span>
                     </td>

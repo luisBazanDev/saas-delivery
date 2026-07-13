@@ -23,8 +23,7 @@ export async function getDashboard(req: Request, res: Response) {
     User.count({
       where: {
         store_id: storeId,
-        role: 'STORE_DELIVERY',
-        is_active: true,
+        role_name: 'STORE_DELIVERY',
       },
     }),
 
@@ -32,9 +31,9 @@ export async function getDashboard(req: Request, res: Response) {
       where: {
         store_id: storeId,
         status: { [Op.in]: ['DELIVERED', 'DONE'] },
-        start_time: { [Op.gte]: today, [Op.lt]: tomorrow },
+        created_at: { [Op.gte]: today, [Op.lt]: tomorrow },
       },
-      attributes: [[fn('SUM', col('total')), 'total_income']],
+      attributes: [[fn('SUM', col('total_amount')), 'total_income']],
       raw: true,
     }),
 
@@ -42,7 +41,7 @@ export async function getDashboard(req: Request, res: Response) {
       where: { store_id: storeId },
       attributes: [
         'status',
-        [fn('COUNT', col('code')), 'count'],
+        [fn('COUNT', col('id')), 'count'],
       ],
       group: ['status'],
       raw: true,
@@ -66,9 +65,9 @@ export async function getDashboard(req: Request, res: Response) {
       status: { [Op.in]: ['IN_TRANSIT', 'DELIVERED'] },
     },
     include: [
-      { model: User, as: 'deliveryUser', attributes: ['id', 'username', 'phone'] },
+      { model: User, as: 'deliveryUser', attributes: ['id', 'name'] },
     ],
-    order: [['start_time', 'DESC']],
+    order: [['created_at', 'DESC']],
     limit: 20,
   })
 

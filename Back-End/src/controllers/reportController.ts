@@ -42,22 +42,22 @@ export async function getReportSummary(req: Request, res: Response) {
 
   const [totalOrders, totalIncome, ordersByStatus, topProducts, deliveryStats] = await Promise.all([
     Order.count({
-      where: { store_id: storeId, start_time: { [Op.gte]: start, [Op.lte]: end } },
+      where: { store_id: storeId, created_at: { [Op.gte]: start, [Op.lte]: end } },
     }),
 
     Order.findAll({
       where: {
         store_id: storeId,
         status: { [Op.in]: ['DELIVERED', 'DONE'] },
-        start_time: { [Op.gte]: start, [Op.lte]: end },
+        created_at: { [Op.gte]: start, [Op.lte]: end },
       },
-      attributes: [[fn('SUM', col('total')), 'total_income']],
+      attributes: [[fn('SUM', col('total_amount')), 'total_income']],
       raw: true,
     }),
 
     Order.findAll({
-      where: { store_id: storeId, start_time: { [Op.gte]: start, [Op.lte]: end } },
-      attributes: ['status', [fn('COUNT', col('code')), 'count']],
+      where: { store_id: storeId, created_at: { [Op.gte]: start, [Op.lte]: end } },
+      attributes: ['status', [fn('COUNT', col('id')), 'count']],
       group: ['status'],
       raw: true,
     }),
@@ -66,15 +66,15 @@ export async function getReportSummary(req: Request, res: Response) {
       include: [
         {
           model: Order,
-          where: { store_id: storeId, start_time: { [Op.gte]: start, [Op.lte]: end } },
+          where: { store_id: storeId, created_at: { [Op.gte]: start, [Op.lte]: end } },
           attributes: [],
         },
         { model: Product, attributes: ['name'] },
       ],
       attributes: [
         [col('product.name'), 'product_name'],
-        [fn('SUM', col('order_products.amount')), 'total_sold'],
-        [fn('SUM', literal('order_products.amount * order_products.price')), 'total_revenue'],
+        [fn('SUM', col('order_items.quantity')), 'total_sold'],
+        [fn('SUM', literal('order_items.quantity * order_items.subtotal')), 'total_revenue'],
       ],
       group: ['product_id', 'product.name'],
       order: [[literal('total_sold'), 'DESC']],
@@ -83,21 +83,21 @@ export async function getReportSummary(req: Request, res: Response) {
     }),
 
     User.findAll({
-      where: { store_id: storeId, role: 'STORE_DELIVERY' },
+      where: { store_id: storeId, role_name: 'STORE_DELIVERY' },
       include: [
         {
           model: Order,
           as: 'deliveryOrders',
-          where: { start_time: { [Op.gte]: start, [Op.lte]: end } },
+          where: { created_at: { [Op.gte]: start, [Op.lte]: end } },
           attributes: [],
         },
       ],
       attributes: [
         'id',
-        'username',
-        [fn('COUNT', col('deliveryOrders.code')), 'deliveries_count'],
+        'name',
+        [fn('COUNT', col('deliveryOrders.id')), 'deliveries_count'],
       ],
-      group: ['users.id', 'users.username'],
+      group: ['users.id', 'users.name'],
       order: [[literal('deliveries_count'), 'DESC']],
       raw: true,
     }),
@@ -151,49 +151,45 @@ export async function exportMovements(req: Request, res: Response) {
   const orders = await Order.findAll({
     where: {
       store_id: storeId,
-      start_time: { [Op.gte]: start, [Op.lte]: end },
+      created_at: { [Op.gte]: start, [Op.lte]: end },
     },
     include: [
       {
         model: OrderProduct,
         include: [{ model: Product, attributes: ['name'] }],
       },
-      { model: User, as: 'deliveryUser', attributes: ['username'] },
+      { model: User, as: 'deliveryUser', attributes: ['name'] },
     ],
-    order: [['start_time', 'DESC']],
+    order: [['created_at', 'DESC']],
   })
 
   const rows: Record<string, any>[] = orders.flatMap((order) => {
     const products = (order as any).OrderProducts || []
-    const deliveryName = (order as any).deliveryUser?.username || 'N/A'
+    const deliveryName = (order as any).deliveryUser?.name || 'N/A'
 
     if (products.length === 0) {
       return [{
-        order_code: order.code,
+        order_id: order.id,
         status: order.status,
         customer: order.customer_name,
-        total: order.total,
-        payment_method: order.payment_id,
+        total: order.total_amount,
         delivery_user: deliveryName,
         product: 'N/A',
         amount: 0,
-        price: order.total || 0,
-        start_time: order.start_time,
-        end_time: order.end_time,
+        price: order.total_amount || 0,
+        created_at: order.created_at,
       }]
     }
     return products.map((op: any) => ({
-      order_code: order.code,
+      order_id: order.id,
       status: order.status,
       customer: order.customer_name,
-      total: order.total,
-      payment_method: order.payment_id,
+      total: order.total_amount,
       delivery_user: deliveryName,
       product: op.Product?.name || 'N/A',
-      amount: op.amount,
-      price: op.price || 0,
-      start_time: order.start_time,
-      end_time: order.end_time,
+      quantity: op.quantity,
+      subtotal: op.subtotal || 0,
+      created_at: order.created_at,
     }))
   })
 
@@ -276,22 +272,22 @@ export async function exportBusinessReport(req: Request, res: Response) {
 
   const [totalOrders, totalIncome, ordersByStatus, topProducts, deliveryStats] = await Promise.all([
     Order.count({
-      where: { store_id: storeId, start_time: { [Op.gte]: start, [Op.lte]: end } },
+      where: { store_id: storeId, created_at: { [Op.gte]: start, [Op.lte]: end } },
     }),
 
     Order.findAll({
       where: {
         store_id: storeId,
         status: { [Op.in]: ['DELIVERED', 'DONE'] },
-        start_time: { [Op.gte]: start, [Op.lte]: end },
+        created_at: { [Op.gte]: start, [Op.lte]: end },
       },
-      attributes: [[fn('SUM', col('total')), 'total_income']],
+      attributes: [[fn('SUM', col('total_amount')), 'total_income']],
       raw: true,
     }),
 
     Order.findAll({
-      where: { store_id: storeId, start_time: { [Op.gte]: start, [Op.lte]: end } },
-      attributes: ['status', [fn('COUNT', col('code')), 'count']],
+      where: { store_id: storeId, created_at: { [Op.gte]: start, [Op.lte]: end } },
+      attributes: ['status', [fn('COUNT', col('id')), 'count']],
       group: ['status'],
       raw: true,
     }),
@@ -300,15 +296,15 @@ export async function exportBusinessReport(req: Request, res: Response) {
       include: [
         {
           model: Order,
-          where: { store_id: storeId, start_time: { [Op.gte]: start, [Op.lte]: end } },
+          where: { store_id: storeId, created_at: { [Op.gte]: start, [Op.lte]: end } },
           attributes: [],
         },
         { model: Product, attributes: ['name'] },
       ],
       attributes: [
         [col('product.name'), 'product_name'],
-        [fn('SUM', col('order_products.amount')), 'total_sold'],
-        [fn('SUM', literal('order_products.amount * order_products.price')), 'total_revenue'],
+        [fn('SUM', col('order_items.quantity')), 'total_sold'],
+        [fn('SUM', literal('order_items.quantity * order_items.subtotal')), 'total_revenue'],
       ],
       group: ['product_id', 'product.name'],
       order: [[literal('total_sold'), 'DESC']],
@@ -317,21 +313,21 @@ export async function exportBusinessReport(req: Request, res: Response) {
     }),
 
     User.findAll({
-      where: { store_id: storeId, role: 'STORE_DELIVERY' },
+      where: { store_id: storeId, role_name: 'STORE_DELIVERY' },
       include: [
         {
           model: Order,
           as: 'deliveryOrders',
-          where: { start_time: { [Op.gte]: start, [Op.lte]: end } },
+          where: { created_at: { [Op.gte]: start, [Op.lte]: end } },
           attributes: [],
         },
       ],
       attributes: [
         'id',
-        'username',
-        [fn('COUNT', col('deliveryOrders.code')), 'deliveries_count'],
+        'name',
+        [fn('COUNT', col('deliveryOrders.id')), 'deliveries_count'],
       ],
-      group: ['users.id', 'users.username'],
+      group: ['users.id', 'users.name'],
       order: [[literal('deliveries_count'), 'DESC']],
       raw: true,
     }),

@@ -54,6 +54,6 @@ export const api = {
   delete: <T>(path: string) => request<T>(path, { method: 'DELETE' }),
 }
 
-export async function loginApi(username: string, password: string) {
-  return api.post<{ bearerToken: string; store_id?: number }>('/auth/login', { username, password })
+export async function loginApi(name: string, password: string) {
+  return api.post<{ bearerToken: string; store_id?: number }>('/auth/login', { name, password })
 }

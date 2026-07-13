@@ -4,7 +4,7 @@ import { setToken, setTokenCookie, setUser, decodeToken } from '../../lib/auth'
 import { Zap } from 'lucide-react'
 
 export default function LoginForm() {
-  const [username, setUsername] = useState('')
+  const [name, setName] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -14,30 +14,30 @@ export default function LoginForm() {
     setError('')
     setLoading(true)
 
-    const sanitizedUsername = username.trim()
-    if (!sanitizedUsername || !password) {
+    const sanitizedName = name.trim()
+    if (!sanitizedName || !password) {
       setError('Usuario y contraseña son requeridos')
       setLoading(false)
       return
     }
 
     try {
-      const res = await loginApi(sanitizedUsername, password)
+      const res = await loginApi(sanitizedName, password)
       setToken(res.bearerToken)
       setTokenCookie(res.bearerToken)
 
       const payload = decodeToken(res.bearerToken)
       if (payload) {
-        setUser({ id: payload.sub, username: payload.username, role: payload.role, store_id: payload.store_id })
+        setUser({ id: payload.sub, name: payload.name, role_name: payload.role_name, store_id: payload.store_id })
       }
 
-      if (payload?.role === 'ADMIN') {
+      if (payload?.role_name === 'ADMIN') {
         window.location.href = '/admin/stores'
-      } else if (payload?.role === 'STORE_ADMIN') {
+      } else if (payload?.role_name === 'STORE_ADMIN') {
         window.location.href = '/stores'
-      } else if (payload?.role === 'STORE_CHEF') {
+      } else if (payload?.role_name === 'STORE_CHEF') {
         window.location.href = `/store/${res.store_id}/kitchen`
-      } else if (payload?.role === 'STORE_DELIVERY') {
+      } else if (payload?.role_name === 'STORE_DELIVERY') {
         window.location.href = `/store/${res.store_id}/delivery`
       } else if (res.store_id) {
         window.location.href = `/store/${res.store_id}/orders`
@@ -64,8 +64,8 @@ export default function LoginForm() {
             <label className="block text-[12px] text-text-secondary uppercase tracking-[1px] mb-2">Usuario</label>
             <input
               type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               placeholder="superadmin, admin, encargado..."
               className="w-full bg-bg-base border border-border px-4 py-3 rounded-lg text-text-primary outline-none focus:border-accent transition-colors text-[14px]"
               autoComplete="username"

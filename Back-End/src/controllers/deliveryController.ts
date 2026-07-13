@@ -26,9 +26,9 @@ export async function getDeliveryOrders(req: Request, res: Response) {
         model: OrderProduct,
         include: [{ model: Product, attributes: ['id', 'name', 'price'] }],
       },
-      { model: User, as: 'deliveryUser', attributes: ['id', 'username', 'phone'] },
+      { model: User, as: 'deliveryUser', attributes: ['id', 'name'] },
     ],
-    order: [['start_time', 'DESC']],
+    order: [['created_at', 'DESC']],
   })
 
   return res.json({ orders })
@@ -36,16 +36,16 @@ export async function getDeliveryOrders(req: Request, res: Response) {
 
 export async function getOrderWithMap(req: Request, res: Response) {
   const storeId = Number(req.params.id)
-  const orderCode = Array.isArray(req.params.code) ? req.params.code[0] : req.params.code
+  const orderId = Number(req.params.id)
 
   const order = await Order.findOne({
-    where: { code: orderCode, store_id: storeId },
+    where: { id: orderId, store_id: storeId },
     include: [
       {
         model: OrderProduct,
         include: [{ model: Product, attributes: ['id', 'name', 'price'] }],
       },
-      { model: User, as: 'deliveryUser', attributes: ['id', 'username', 'phone'] },
+      { model: User, as: 'deliveryUser', attributes: ['id', 'name'] },
     ],
   })
 
@@ -54,33 +54,31 @@ export async function getOrderWithMap(req: Request, res: Response) {
   return res.json({
     order,
     delivery_location: {
-      lat: order.lat,
-      lon: order.lon,
-      address: order.address,
+      address: order.delivery_address,
     },
   })
 }
 
 export async function assignDelivery(req: Request, res: Response) {
   const storeId = Number(req.params.id)
-  const orderCode = Array.isArray(req.params.code) ? req.params.code[0] : req.params.code
+  const orderId = Number(req.params.id)
   const { delivery_user_id } = req.body
 
   if (!delivery_user_id) return res.status(400).json({ error: 'delivery_user_id is required' })
 
-  const order = await Order.findOne({ where: { code: orderCode, store_id: storeId } })
+  const order = await Order.findOne({ where: { id: orderId, store_id: storeId } })
   if (!order) return res.status(404).json({ error: 'Order not found' })
 
   const deliveryUser = await User.findOne({
-    where: { id: delivery_user_id, store_id: storeId, role: 'STORE_DELIVERY', is_active: true },
+    where: { id: delivery_user_id, store_id: storeId, role_name: 'STORE_DELIVERY' },
   })
   if (!deliveryUser) return res.status(404).json({ error: 'Delivery user not found or not available' })
 
   await order.update({ delivery_user_id, status: 'IN_TRANSIT' })
 
-  const updated = await Order.findByPk(orderCode, {
+  const updated = await Order.findByPk(orderId, {
     include: [
-      { model: User, as: 'deliveryUser', attributes: ['id', 'username', 'phone'] },
+      { model: User, as: 'deliveryUser', attributes: ['id', 'name'] },
     ],
   })
 
@@ -89,20 +87,15 @@ export async function assignDelivery(req: Request, res: Response) {
 
 export async function updateDeliveryStatus(req: Request, res: Response) {
   const storeId = Number(req.params.id)
-  const orderCode = Array.isArray(req.params.code) ? req.params.code[0] : req.params.code
-  const { status, lat, lon } = req.body
+  const orderId = Number(req.params.id)
+  const { status } = req.body
 
   if (!status) return res.status(400).json({ error: 'status is required' })
 
-  const order = await Order.findOne({ where: { code: orderCode, store_id: storeId } })
+  const order = await Order.findOne({ where: { id: orderId, store_id: storeId } })
   if (!order) return res.status(404).json({ error: 'Order not found' })
 
-  const updateData: any = { status }
-  if (lat !== undefined) updateData.lat = lat
-  if (lon !== undefined) updateData.lon = lon
-  if (status === 'DELIVERED') updateData.end_time = new Date()
-
-  await order.update(updateData)
+  await order.update({ status })
 
   return res.json(order)
 }
@@ -117,9 +110,9 @@ export async function getActiveDeliveries(req: Request, res: Response) {
       status: 'IN_TRANSIT',
     },
     include: [
-      { model: User, as: 'deliveryUser', attributes: ['id', 'username', 'phone'] },
+      { model: User, as: 'deliveryUser', attributes: ['id', 'name'] },
     ],
-    order: [['start_time', 'DESC']],
+    order: [['created_at', 'DESC']],
   })
 
   const filteredDeliveries = deliveries.filter((o) => o.delivery_user_id != null)

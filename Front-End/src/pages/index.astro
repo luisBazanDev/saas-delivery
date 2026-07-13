@@ -19,7 +19,7 @@ import BaseLayout from '../layouts/BaseLayout.astro'
         window.location.href = '/login'
       } else if (payload.store_id) {
         window.location.href = '/store/' + payload.store_id + '/orders'
-      } else if (payload.role === 'ADMIN') {
+      } else if (payload.role_name === 'ADMIN') {
         window.location.href = '/admin/stores'
       } else {
         window.location.href = '/login'

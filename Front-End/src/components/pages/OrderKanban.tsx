@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { api } from '../../lib/api'
-import type { Order, KanbanResponse } from '../../lib/types'
-import { Plus, FileText, Trash2, MapPin } from 'lucide-react'
+import type { Order, KanbanResponse, Product } from '../../lib/types'
+import { Plus, FileText, Trash2, MapPin, Search, X, Minus, Plus as PlusIcon } from 'lucide-react'
 
 interface OrderKanbanProps {
   storeId: string
@@ -18,11 +18,15 @@ export default function OrderKanban({ storeId }: OrderKanbanProps) {
   const [kanban, setKanban] = useState<Record<string, Order[]>>({ PENDING: [], IN_PROGRESS: [], IN_TRANSIT: [], DELIVERED: [], DONE: [] })
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
-  const [form, setForm] = useState({ customer_name: '', customer_phone: '', address: '', total: '', products: '' })
+  const [form, setForm] = useState({ customer_name: '', customer_phone: '', address: '' })
+  const [products, setProducts] = useState<Product[]>([])
+  const [cart, setCart] = useState<{ product: Product; quantity: number }[]>([])
+  const [productSearch, setProductSearch] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => { fetchOrders() }, [storeId])
+  useEffect(() => { fetchProducts() }, [storeId])
 
   async function fetchOrders() {
     try {
@@ -35,22 +39,37 @@ export default function OrderKanban({ storeId }: OrderKanbanProps) {
     }
   }
 
+  async function fetchProducts() {
+    try {
+      const res = await api.get<Product[]>(`/products?archived=false`)
+      setProducts(res.filter(p => p.store_id === Number(storeId) && p.is_available))
+    } catch {
+      setProducts([])
+    }
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (cart.length === 0) {
+      alert('Agrega al menos un producto')
+      return
+    }
     setSubmitting(true)
     try {
-      const products = form.products.split('\n').filter(Boolean).map((line) => {
-        const [product_id, amount, price] = line.split(',').map((s) => s.trim())
-        return { product_id: Number(product_id), amount: Number(amount), price: Number(price) }
-      })
+      const total = cart.reduce((sum, item) => sum + Number(item.product.price) * item.quantity, 0)
       await api.post(`/stores/${storeId}/orders`, {
         customer_name: form.customer_name,
         customer_phone: form.customer_phone,
         address: form.address,
-        total: Number(form.total) || 0,
-        products,
+        total,
+        products: cart.map(item => ({
+          product_id: item.product.id,
+          amount: item.quantity,
+          price: Number(item.product.price),
+        })),
       })
-      setForm({ customer_name: '', customer_phone: '', address: '', total: '', products: '' })
+      setForm({ customer_name: '', customer_phone: '', address: '' })
+      setCart([])
       setShowForm(false)
       fetchOrders()
     } catch (err) {
@@ -59,6 +78,37 @@ export default function OrderKanban({ storeId }: OrderKanbanProps) {
       setSubmitting(false)
     }
   }
+
+  function addToCart(product: Product) {
+    setCart(prev => {
+      const existing = prev.find(item => item.product.id === product.id)
+      if (existing) {
+        return prev.map(item => item.product.id === product.id ? { ...item, quantity: item.quantity + 1 } : item)
+      }
+      return [...prev, { product, quantity: 1 }]
+    })
+  }
+
+  function removeFromCart(productId: number) {
+    setCart(prev => prev.filter(item => item.product.id !== productId))
+  }
+
+  function updateQuantity(productId: number, delta: number) {
+    setCart(prev => prev.map(item => {
+      if (item.product.id === productId) {
+        const newQty = item.quantity + delta
+        return newQty > 0 ? { ...item, quantity: newQty } : item
+      }
+      return item
+    }).filter(item => item.quantity > 0))
+  }
+
+  const filteredProducts = products.filter(p =>
+    p.name.toLowerCase().includes(productSearch.toLowerCase()) ||
+    (p.description && p.description.toLowerCase().includes(productSearch.toLowerCase()))
+  )
+
+  const totalAmount = cart.reduce((sum, item) => sum + Number(item.product.price) * item.quantity, 0)
 
   function handleCSVImport(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
@@ -166,38 +216,131 @@ export default function OrderKanban({ storeId }: OrderKanbanProps) {
       </div>
 
       {showForm && (
-        <form onSubmit={handleSubmit} className="mb-5 p-4 bg-bg-surface rounded-lg border border-border">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div>
-              <label className="block text-[12px] text-text-secondary uppercase tracking-[1px] mb-1.5">Cliente *</label>
-              <input type="text" value={form.customer_name} onChange={(e) => setForm({ ...form, customer_name: e.target.value })} className="w-full bg-bg-base border border-border px-3 py-2.5 rounded-lg text-text-primary outline-none focus:border-accent text-[14px]" required />
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-bg-surface rounded-lg border border-border w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="flex justify-between items-center p-4 border-b border-border">
+              <h4 className="text-[14px] font-semibold">Nueva Orden</h4>
+              <button onClick={() => { setShowForm(false); setCart([]) }} className="text-text-secondary hover:text-text-primary cursor-pointer">
+                <X size={18} />
+              </button>
             </div>
-            <div>
-              <label className="block text-[12px] text-text-secondary uppercase tracking-[1px] mb-1.5">Teléfono</label>
-              <input type="text" value={form.customer_phone} onChange={(e) => setForm({ ...form, customer_phone: e.target.value })} className="w-full bg-bg-base border border-border px-3 py-2.5 rounded-lg text-text-primary outline-none focus:border-accent text-[14px]" />
-            </div>
-            <div>
-              <label className="block text-[12px] text-text-secondary uppercase tracking-[1px] mb-1.5">Dirección</label>
-              <input type="text" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} className="w-full bg-bg-base border border-border px-3 py-2.5 rounded-lg text-text-primary outline-none focus:border-accent text-[14px]" />
-            </div>
-            <div>
-              <label className="block text-[12px] text-text-secondary uppercase tracking-[1px] mb-1.5">Total</label>
-              <input type="number" step="0.01" value={form.total} onChange={(e) => setForm({ ...form, total: e.target.value })} className="w-full bg-bg-base border border-border px-3 py-2.5 rounded-lg text-text-primary outline-none focus:border-accent text-[14px]" />
-            </div>
-            <div className="md:col-span-2">
-              <label className="block text-[12px] text-text-secondary uppercase tracking-[1px] mb-1.5">Productos (product_id,amount,price por línea)</label>
-              <textarea value={form.products} onChange={(e) => setForm({ ...form, products: e.target.value })} className="w-full bg-bg-base border border-border px-3 py-2.5 rounded-lg text-text-primary outline-none focus:border-accent text-[14px] h-20" placeholder={"1,2,25.00\n3,1,15.50"} />
+
+            <div className="flex flex-1 overflow-hidden">
+              <div className="w-1/2 border-r border-border flex flex-col">
+                <div className="p-4 border-b border-border">
+                  <div className="relative">
+                    <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary" />
+                    <input
+                      type="text"
+                      value={productSearch}
+                      onChange={(e) => setProductSearch(e.target.value)}
+                      placeholder="Buscar productos..."
+                      className="w-full bg-bg-base border border-border pl-9 pr-3 py-2 rounded-lg text-text-primary outline-none focus:border-accent text-[13px]"
+                    />
+                  </div>
+                </div>
+                <div className="flex-1 overflow-y-auto p-4 space-y-2">
+                  {filteredProducts.map(product => (
+                    <div
+                      key={product.id}
+                      onClick={() => addToCart(product)}
+                      className="bg-bg-base border border-border rounded-lg p-3 cursor-pointer hover:border-accent transition-colors"
+                    >
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <div className="font-medium text-[13px]">{product.name}</div>
+                          {product.description && <div className="text-text-secondary text-[11px] mt-0.5">{product.description}</div>}
+                        </div>
+                        <div className="text-accent font-semibold text-[13px]">S/ {Number(product.price).toFixed(2)}</div>
+                      </div>
+                      {product.stock !== undefined && (
+                        <div className="text-text-secondary text-[11px] mt-1">Stock: {product.stock}</div>
+                      )}
+                    </div>
+                  ))}
+                  {filteredProducts.length === 0 && (
+                    <div className="text-center text-text-secondary text-[13px] py-8">No hay productos disponibles</div>
+                  )}
+                </div>
+              </div>
+
+              <div className="w-1/2 flex flex-col">
+                <div className="p-4 border-b border-border">
+                  <h5 className="text-[13px] font-semibold mb-3">Productos Seleccionados</h5>
+                  <div className="space-y-2 max-h-48 overflow-y-auto">
+                    {cart.map(item => (
+                      <div key={item.product.id} className="flex items-center justify-between bg-bg-base border border-border rounded-lg p-2">
+                        <div className="flex-1 min-w-0">
+                          <div className="text-[12px] font-medium truncate">{item.product.name}</div>
+                          <div className="text-[11px] text-text-secondary">S/ {Number(item.product.price).toFixed(2)} c/u</div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button onClick={() => updateQuantity(item.product.id, -1)} className="w-6 h-6 flex items-center justify-center rounded bg-bg-surface border border-border text-text-secondary hover:text-accent cursor-pointer">
+                            <Minus size={12} />
+                          </button>
+                          <span className="text-[12px] font-medium w-6 text-center">{item.quantity}</span>
+                          <button onClick={() => updateQuantity(item.product.id, 1)} className="w-6 h-6 flex items-center justify-center rounded bg-bg-surface border border-border text-text-secondary hover:text-accent cursor-pointer">
+                            <PlusIcon size={12} />
+                          </button>
+                          <button onClick={() => removeFromCart(item.product.id)} className="ml-2 text-text-secondary hover:text-danger cursor-pointer">
+                            <X size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                    {cart.length === 0 && (
+                      <div className="text-center text-text-secondary text-[12px] py-4">Haz clic en productos para agregarlos</div>
+                    )}
+                  </div>
+                  <div className="flex justify-between items-center mt-3 pt-3 border-t border-border">
+                    <span className="text-[13px] font-semibold">Total:</span>
+                    <span className="text-accent font-bold text-[15px]">S/ {totalAmount.toFixed(2)}</span>
+                  </div>
+                </div>
+
+                <form onSubmit={handleSubmit} className="p-4 space-y-3 flex-1 overflow-y-auto">
+                  <div>
+                    <label className="block text-[11px] text-text-secondary uppercase tracking-[1px] mb-1">Cliente *</label>
+                    <input
+                      type="text"
+                      value={form.customer_name}
+                      onChange={(e) => setForm({ ...form, customer_name: e.target.value })}
+                      className="w-full bg-bg-base border border-border px-3 py-2 rounded-lg text-text-primary outline-none focus:border-accent text-[13px]"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] text-text-secondary uppercase tracking-[1px] mb-1">Teléfono</label>
+                    <input
+                      type="text"
+                      value={form.customer_phone}
+                      onChange={(e) => setForm({ ...form, customer_phone: e.target.value })}
+                      className="w-full bg-bg-base border border-border px-3 py-2 rounded-lg text-text-primary outline-none focus:border-accent text-[13px]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] text-text-secondary uppercase tracking-[1px] mb-1">Dirección</label>
+                    <input
+                      type="text"
+                      value={form.address}
+                      onChange={(e) => setForm({ ...form, address: e.target.value })}
+                      className="w-full bg-bg-base border border-border px-3 py-2 rounded-lg text-text-primary outline-none focus:border-accent text-[13px]"
+                    />
+                  </div>
+                </form>
+
+                <div className="p-4 border-t border-border flex gap-2">
+                  <button type="button" onClick={() => { setShowForm(false); setCart([]) }} className="flex-1 bg-transparent border border-border text-text-primary px-4 py-2 rounded-lg cursor-pointer text-[13px] hover:border-border-hover">
+                    Cancelar
+                  </button>
+                  <button onClick={handleSubmit} disabled={submitting || cart.length === 0} className="flex-1 bg-accent text-bg-base border-none px-4 py-2 rounded-lg font-semibold cursor-pointer text-[13px] disabled:opacity-50">
+                    {submitting ? 'Creando...' : 'Crear Orden'}
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
-          <div className="flex gap-2">
-            <button type="submit" disabled={submitting} className="bg-accent text-bg-base border-none px-4 py-2 rounded-lg font-semibold cursor-pointer text-[13px] disabled:opacity-50">
-              {submitting ? 'Creando...' : 'Crear Orden'}
-            </button>
-            <button type="button" onClick={() => setShowForm(false)} className="bg-transparent border border-border text-text-primary px-4 py-2 rounded-lg cursor-pointer text-[13px] hover:border-border-hover">
-              Cancelar
-            </button>
-          </div>
-        </form>
+        </div>
       )}
 
       {loading ? (

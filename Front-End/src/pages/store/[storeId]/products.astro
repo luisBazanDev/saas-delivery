@@ -1,16 +1,16 @@
 ---
 import BaseLayout from '../../../layouts/BaseLayout.astro'
 import ProtectedRoute from '../../../components/auth/ProtectedRoute'
-import OrderKanban from '../../../components/pages/OrderKanban'
+import ProductManagement from '../../../components/pages/ProductManagement'
 import AppLayout from '../../../components/layout/AppLayout'
 
 const storeId = Astro.params.storeId || ''
 ---
 
-<BaseLayout title="Tablero de Órdenes">
+<BaseLayout title="Gestión de Productos">
 <ProtectedRoute client:load requiredRole="STORE_ADMIN">
-  <AppLayout client:load title="Tablero de Órdenes" storeId={storeId}>
-    <OrderKanban client:load storeId={storeId} />
+  <AppLayout client:load title="Gestión de Productos" storeId={storeId}>
+    <ProductManagement client:load storeId={storeId} />
   </AppLayout>
 </ProtectedRoute>
 </BaseLayout>

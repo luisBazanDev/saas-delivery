@@ -160,25 +160,25 @@ export async function seed() {
 
     // --- Products ---
     const store1Products = await Promise.all([
-      Product.create({ store_id: store1.id, name: 'Hamburguesa Clásica', description: 'Carne 150g, lechuga, tomate, queso', price: 89.00, stock: 50, is_available: true }),
-      Product.create({ store_id: store1.id, name: 'Hamburguesa Doble', description: 'Doble carne, bacon, queso cheddar', price: 129.00, stock: 40, is_available: true }),
-      Product.create({ store_id: store1.id, name: 'Hamburguesa Pollo', description: 'Pechuga empanizada, mayo, lechuga', price: 95.00, stock: 35, is_available: true }),
-      Product.create({ store_id: store1.id, name: 'Coca-Cola 600ml', description: 'Refresco Coca-Cola', price: 25.00, stock: 100, is_available: true }),
-      Product.create({ store_id: store1.id, name: 'Agua Natural 1L', description: 'Agua embotellada', price: 18.00, stock: 80, is_available: true }),
-      Product.create({ store_id: store1.id, name: 'Papas Fritas', description: 'Porción grande de papas fritas', price: 45.00, stock: 60, is_available: true }),
-      Product.create({ store_id: store1.id, name: 'Aros de Cebolla', description: '8 piezas de aros de cebolla', price: 55.00, stock: 45, is_available: true }),
-      Product.create({ store_id: store1.id, name: 'Brownie con Helado', description: 'Brownie de chocolate con helado de vainilla', price: 65.00, stock: 30, is_available: true }),
+      Product.create({ store_id: store1.id, name: 'Hamburguesa Clásica', description: 'Carne 150g, lechuga, tomate, queso', price: 89.00, stock: 50, is_available: true, is_archived: false }),
+      Product.create({ store_id: store1.id, name: 'Hamburguesa Doble', description: 'Doble carne, bacon, queso cheddar', price: 129.00, stock: 40, is_available: true, is_archived: false }),
+      Product.create({ store_id: store1.id, name: 'Hamburguesa Pollo', description: 'Pechuga empanizada, mayo, lechuga', price: 95.00, stock: 35, is_available: true, is_archived: false }),
+      Product.create({ store_id: store1.id, name: 'Coca-Cola 600ml', description: 'Refresco Coca-Cola', price: 25.00, stock: 100, is_available: true, is_archived: false }),
+      Product.create({ store_id: store1.id, name: 'Agua Natural 1L', description: 'Agua embotellada', price: 18.00, stock: 80, is_available: true, is_archived: false }),
+      Product.create({ store_id: store1.id, name: 'Papas Fritas', description: 'Porción grande de papas fritas', price: 45.00, stock: 60, is_available: true, is_archived: false }),
+      Product.create({ store_id: store1.id, name: 'Aros de Cebolla', description: '8 piezas de aros de cebolla', price: 55.00, stock: 45, is_available: true, is_archived: false }),
+      Product.create({ store_id: store1.id, name: 'Brownie con Helado', description: 'Brownie de chocolate con helado de vainilla', price: 65.00, stock: 30, is_available: true, is_archived: false }),
     ])
 
     const store2Products = await Promise.all([
-      Product.create({ store_id: store2.id, name: 'Pizza Margherita', description: 'Tomate, mozzarella, albahaca', price: 149.00, stock: 30, is_available: true }),
-      Product.create({ store_id: store2.id, name: 'Pizza Pepperoni', description: 'Pepperoni, queso mozzarella', price: 169.00, stock: 25, is_available: true }),
-      Product.create({ store_id: store2.id, name: 'Pizza Hawaiana', description: 'Jamón, piña, queso', price: 159.00, stock: 20, is_available: true }),
-      Product.create({ store_id: store2.id, name: 'Pizza 4 Quesos', description: 'Mozzarella, gorgonzola, parmesano, cheddar', price: 179.00, stock: 20, is_available: true }),
-      Product.create({ store_id: store2.id, name: 'Coca-Cola 600ml', description: 'Refresco Coca-Cola', price: 25.00, stock: 100, is_available: true }),
-      Product.create({ store_id: store2.id, name: 'Limonada Natural', description: 'Limonada hecha en casa', price: 30.00, stock: 50, is_available: true }),
-      Product.create({ store_id: store2.id, name: 'Pan con Ajo', description: '4 piezas de pan con ajo', price: 40.00, stock: 60, is_available: true }),
-      Product.create({ store_id: store2.id, name: 'Tiramisú', description: 'Postre italiano clásico', price: 75.00, stock: 15, is_available: true }),
+      Product.create({ store_id: store2.id, name: 'Pizza Margherita', description: 'Tomate, mozzarella, albahaca', price: 149.00, stock: 30, is_available: true, is_archived: false }),
+      Product.create({ store_id: store2.id, name: 'Pizza Pepperoni', description: 'Pepperoni, queso mozzarella', price: 169.00, stock: 25, is_available: true, is_archived: false }),
+      Product.create({ store_id: store2.id, name: 'Pizza Hawaiana', description: 'Jamón, piña, queso', price: 159.00, stock: 20, is_available: true, is_archived: false }),
+      Product.create({ store_id: store2.id, name: 'Pizza 4 Quesos', description: 'Mozzarella, gorgonzola, parmesano, cheddar', price: 179.00, stock: 20, is_available: true, is_archived: false }),
+      Product.create({ store_id: store2.id, name: 'Coca-Cola 600ml', description: 'Refresco Coca-Cola', price: 25.00, stock: 100, is_available: true, is_archived: false }),
+      Product.create({ store_id: store2.id, name: 'Limonada Natural', description: 'Limonada hecha en casa', price: 30.00, stock: 50, is_available: true, is_archived: false }),
+      Product.create({ store_id: store2.id, name: 'Pan con Ajo', description: '4 piezas de pan con ajo', price: 40.00, stock: 60, is_available: true, is_archived: false }),
+      Product.create({ store_id: store2.id, name: 'Tiramisú', description: 'Postre italiano clásico', price: 75.00, stock: 15, is_available: true, is_archived: false }),
     ])
     console.log('Created 8 products per store')
 

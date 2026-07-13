@@ -4,7 +4,8 @@ import {
   listProducts,
   getProduct,
   updateProduct,
-  deleteProduct,
+  archiveProduct,
+  unarchiveProduct,
 } from '../controllers/productController'
 import { authMiddleware } from '../middleware/authMiddleware'
 import { requireRole } from '../middleware/requireRole'
@@ -15,6 +16,7 @@ router.get('/', authMiddleware, requireRole('STORE_ADMIN'), listProducts)
 router.post('/', authMiddleware, requireRole('STORE_ADMIN'), createProduct)
 router.get('/:id', authMiddleware, requireRole('STORE_ADMIN'), getProduct)
 router.put('/:id', authMiddleware, requireRole('STORE_ADMIN'), updateProduct)
-router.delete('/:id', authMiddleware, requireRole('STORE_ADMIN'), deleteProduct)
+router.put('/:id/archive', authMiddleware, requireRole('STORE_ADMIN'), archiveProduct)
+router.put('/:id/unarchive', authMiddleware, requireRole('STORE_ADMIN'), unarchiveProduct)
 
 export default router

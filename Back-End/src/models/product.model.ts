@@ -24,6 +24,8 @@ export class Product extends Model<
 
   declare is_available: boolean
 
+  declare is_archived: CreationOptional<boolean>
+
   declare description?: string
 
   declare stock?: number
@@ -59,6 +61,12 @@ Product.init(
     is_available: {
       type: DataTypes.BOOLEAN,
       defaultValue: true,
+      allowNull: false,
+    },
+
+    is_archived: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
       allowNull: false,
     },
 

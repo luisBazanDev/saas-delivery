@@ -44,6 +44,7 @@ export interface Product {
   name: string
   price: number
   is_available: boolean
+  is_archived: boolean
   description?: string
   stock?: number
 }

@@ -8,7 +8,7 @@ const storeId = Astro.params.storeId || ''
 ---
 
 <BaseLayout title="Dashboard del Local">
-<ProtectedRoute client:load requiredRole="STORE_MANAGER">
+<ProtectedRoute client:load requiredRoles={['STORE_ADMIN', 'STORE_MANAGER']}>
   <AppLayout client:load title="Dashboard del Local" storeId={storeId}>
     <StoreDashboard client:load storeId={storeId} />
   </AppLayout>

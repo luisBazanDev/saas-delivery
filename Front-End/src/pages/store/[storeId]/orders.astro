@@ -8,7 +8,7 @@ const storeId = Astro.params.storeId || ''
 ---
 
 <BaseLayout title="Tablero de Órdenes">
-<ProtectedRoute client:load requiredRole="STORE_ADMIN">
+<ProtectedRoute client:load requiredRoles={['STORE_ADMIN', 'STORE_MANAGER']}>
   <AppLayout client:load title="Tablero de Órdenes" storeId={storeId}>
     <OrderKanban client:load storeId={storeId} />
   </AppLayout>

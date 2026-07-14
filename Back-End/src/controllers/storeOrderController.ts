@@ -46,9 +46,9 @@ export async function createOrder(req: Request, res: Response) {
   console.log('[ORDER] req.path:', req.path)
   console.log('[ORDER] req.body:', JSON.stringify(req.body))
   
-  const storeId = Number(req.params.id)
+  const storeId = Number(req.params.id) || Number(req.body.store_id)
   console.log('[ORDER] storeId:', storeId)
-  if (!storeId) return res.status(400).json({ error: 'store_id is required' })
+  if (!storeId || isNaN(storeId)) return res.status(400).json({ error: 'store_id is required' })
 
   const { customer_name, phone, delivery_address, total_amount, products } = req.body
   if (!customer_name || !products || products.length === 0) {

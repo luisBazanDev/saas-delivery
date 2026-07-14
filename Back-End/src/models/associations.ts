@@ -49,6 +49,22 @@ Order.belongsToMany(Product, {
     otherKey: "product_id"
 })
 
+Order.hasMany(OrderProduct, {
+    foreignKey: "order_id"
+})
+
+OrderProduct.belongsTo(Order, {
+    foreignKey: "order_id"
+})
+
+Product.hasMany(OrderProduct, {
+    foreignKey: "product_id"
+})
+
+OrderProduct.belongsTo(Product, {
+    foreignKey: "product_id"
+})
+
 User.hasMany(Order, {
     foreignKey: "delivery_user_id",
     as: "deliveryOrders"

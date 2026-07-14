@@ -58,6 +58,7 @@ export default function OrderKanban({ storeId }: OrderKanbanProps) {
     try {
       const total = cart.reduce((sum, item) => sum + Number(item.product.price) * item.quantity, 0)
       await api.post(`/stores/${storeId}/orders`, {
+        store_id: Number(storeId),
         customer_name: form.customer_name,
         phone: form.customer_phone,
         delivery_address: form.address,
@@ -127,6 +128,7 @@ export default function OrderKanban({ storeId }: OrderKanbanProps) {
 
         try {
           await api.post(`/stores/${storeId}/orders`, {
+            store_id: Number(storeId),
             code,
             customer_name,
             address,

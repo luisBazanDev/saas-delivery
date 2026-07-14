@@ -5,6 +5,10 @@ const BACKEND_URL = import.meta.env.API_URL || 'http://localhost:3000/api'
 export const ALL: APIRoute = async ({ request, params }) => {
   const path = params.path
   const targetUrl = `${BACKEND_URL}/${path}${new URL(request.url).search}`
+  
+  console.log(`[PROXY] ${request.method} /api/${path} -> ${targetUrl}`)
+  console.log(`[PROXY] params.path: "${path}"`)
+  console.log(`[PROXY] BACKEND_URL: "${BACKEND_URL}"`)
 
   const headers = new Headers(request.headers)
   headers.delete('host')
@@ -12,6 +16,8 @@ export const ALL: APIRoute = async ({ request, params }) => {
   const body = request.method !== 'GET' && request.method !== 'HEAD'
     ? await request.text()
     : undefined
+
+  console.log(`[PROXY] Body: ${body?.substring(0, 200) || 'none'}`)
 
   const res = await fetch(targetUrl, {
     method: request.method,

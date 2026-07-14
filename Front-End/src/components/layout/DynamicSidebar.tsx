@@ -143,27 +143,34 @@ export default function DynamicSidebar({ currentPath, storeId }: DynamicSidebarP
         </div>
 
         <div className="px-3 py-5 flex-1 overflow-y-auto">
-          {config.menu.map((group) => (
-            <div key={group.label} className="mb-6">
-              <p className="text-[10px] text-text-secondary uppercase tracking-[1px] mb-2.5 mx-2.5">{group.label}</p>
-              {group.items.map((item) => {
-                const href = resolveHref(item.href, storeId)
-                const isActive = currentPath === href || (item.id === 'dashboard' && currentPath === `/store/${storeId}`)
-                return (
-                  <a
-                    key={item.id}
-                    href={href}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer text-[14px] text-text-secondary mb-1 transition-all duration-200 ${
-                      isActive ? 'text-accent bg-accent/5' : 'hover:text-text-primary hover:bg-bg-elevated'
-                    }`}
-                  >
-                    {item.icon}
-                    <span>{item.label}</span>
-                  </a>
-                )
-              })}
-            </div>
-          ))}
+          {config.menu.map((group) => {
+            const validItems = group.items.filter((item) => {
+              const resolved = resolveHref(item.href, storeId)
+              return !resolved.includes('//') || resolved.startsWith('http')
+            })
+            if (validItems.length === 0) return null
+            return (
+              <div key={group.label} className="mb-6">
+                <p className="text-[10px] text-text-secondary uppercase tracking-[1px] mb-2.5 mx-2.5">{group.label}</p>
+                {validItems.map((item) => {
+                  const href = resolveHref(item.href, storeId)
+                  const isActive = currentPath === href || (item.id === 'dashboard' && currentPath === `/store/${storeId}`)
+                  return (
+                    <a
+                      key={item.id}
+                      href={href}
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer text-[14px] text-text-secondary mb-1 transition-all duration-200 ${
+                        isActive ? 'text-accent bg-accent/5' : 'hover:text-text-primary hover:bg-bg-elevated'
+                      }`}
+                    >
+                      {item.icon}
+                      <span>{item.label}</span>
+                    </a>
+                  )
+                })}
+              </div>
+            )
+          })}
         </div>
 
         <div className="px-5 py-5 border-t border-border">

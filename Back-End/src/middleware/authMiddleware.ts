@@ -12,14 +12,18 @@ const publicKey = fs.readFileSync(path.join(__dirname, '../../private/public.pem
 const JWT_SECRET = fs.readFileSync(path.join(__dirname, '../../private/private.pem'), 'utf-8')
 
 export async function authMiddleware(req: Request, res: Response, next: NextFunction) {
+  console.log('[AUTH] authMiddleware called')
+  console.log('[AUTH] req.headers.authorization:', req.headers.authorization ? 'present' : 'missing')
   const header = req.headers.authorization
   if (!header || !header.startsWith('Bearer ')) return res.status(401).json({ error: 'missing token' })
   const token = header.split(' ')[1]
   try {
     const payload = publicKey ? jwt.verify(token, publicKey) : jwt.verify(token, JWT_SECRET)
+    console.log('[AUTH] JWT payload:', JSON.stringify(payload))
     ;(req as any).user = payload
     next()
   } catch (err) {
+    console.log('[AUTH] JWT verification error:', err)
     return res.status(401).json({ error: 'invalid token' })
   }
 }

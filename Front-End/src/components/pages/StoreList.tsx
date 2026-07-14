@@ -9,7 +9,12 @@ export default function StoreList() {
 
   useEffect(() => {
     api.get<Store[]>('/stores')
-      .then(setStores)
+      .then((data) => {
+        setStores(data)
+        if (data.length === 1) {
+          window.location.href = `/store/${data[0].id}/`
+        }
+      })
       .catch(() => setStores([]))
       .finally(() => setLoading(false))
   }, [])

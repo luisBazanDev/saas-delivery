@@ -34,7 +34,7 @@ export default function LoginForm() {
       if (payload?.role_name === 'ADMIN') {
         window.location.href = '/admin/stores'
       } else if (payload?.role_name === 'STORE_ADMIN') {
-        window.location.href = '/stores'
+        window.location.href = res.store_id ? `/store/${res.store_id}/` : '/stores'
       } else if (payload?.role_name === 'STORE_CHEF') {
         window.location.href = `/store/${res.store_id}/kitchen`
       } else if (payload?.role_name === 'STORE_DELIVERY') {

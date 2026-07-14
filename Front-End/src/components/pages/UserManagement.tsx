@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { api } from '../../lib/api'
+import { api } from '../../lib/http'
 import { getUser } from '../../lib/auth'
 import type { User, UserRole, UserListResponse } from '../../lib/types'
 import { Plus, Pencil, Trash2, Users } from 'lucide-react'

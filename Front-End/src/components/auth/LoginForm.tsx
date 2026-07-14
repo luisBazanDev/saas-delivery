@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { loginApi } from '../../lib/api'
+import { loginApi } from '../../lib/http'
 import { setToken, setTokenCookie, setUser, decodeToken } from '../../lib/auth'
 import { Zap } from 'lucide-react'
 

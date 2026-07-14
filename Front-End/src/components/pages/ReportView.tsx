@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { api } from '../../lib/api'
+import { api } from '../../lib/http'
 import type { ReportSummary } from '../../lib/types'
 import { FileText, FileSpreadsheet, FileCode, FileDown } from 'lucide-react'
 

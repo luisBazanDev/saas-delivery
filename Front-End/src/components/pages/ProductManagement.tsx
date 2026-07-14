@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { api } from '../../lib/api'
+import { api } from '../../lib/http'
 import type { Product } from '../../lib/types'
 import { Plus, Edit2, Archive, RotateCcw, X, Search } from 'lucide-react'
 

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { api } from '../../lib/api'
+import { api } from '../../lib/http'
 import type { Order, KanbanResponse, Product } from '../../lib/types'
 import { Plus, FileText, Trash2, MapPin, Search, X, Minus, Plus as PlusIcon } from 'lucide-react'
 

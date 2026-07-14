@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { api } from '../../lib/api'
+import { api } from '../../lib/http'
 import type { Store } from '../../lib/types'
 import { MapPin } from 'lucide-react'
 

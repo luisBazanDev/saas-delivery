@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { api } from '../lib/api'
+import { api } from '../lib/http'
 
 export function useApi<T>(path: string) {
   const [data, setData] = useState<T | null>(null)

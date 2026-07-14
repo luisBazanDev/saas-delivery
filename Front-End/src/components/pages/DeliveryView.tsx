@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { api } from '../../lib/api'
+import { api } from '../../lib/http'
 import type { DeliveryResponse, Order } from '../../lib/types'
 import { MapPin, Bike } from 'lucide-react'
 

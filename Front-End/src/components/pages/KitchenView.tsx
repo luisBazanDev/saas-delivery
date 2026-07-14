@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { api } from '../../lib/api'
+import { api } from '../../lib/http'
 import type { KitchenResponse, Order } from '../../lib/types'
 import { ChefHat, Clock, Undo } from 'lucide-react'
 

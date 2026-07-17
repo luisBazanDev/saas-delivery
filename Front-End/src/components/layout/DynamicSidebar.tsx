@@ -3,7 +3,6 @@ import {
   Store,
   Building2,
   Users,
-  FileText,
   LayoutDashboard,
   KanbanSquare,
   ChefHat,
@@ -55,7 +54,6 @@ const roleConfig: Record<string, { name: string; menu: NavGroup[] }> = {
           { id: 'stores', label: 'Mis Locales', href: '/stores', icon: <Building2 size={16} /> },
           { id: 'users', label: 'Usuarios', href: '/users', icon: <Users size={16} /> },
           { id: 'products', label: 'Productos', href: '/store/${storeId}/products', icon: <Package size={16} /> },
-          { id: 'reports', label: 'Reportes', href: '/store/${storeId}/reports', icon: <FileText size={16} /> },
         ],
       },
       {

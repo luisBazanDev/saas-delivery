@@ -143,20 +143,6 @@ export interface ActiveDeliveriesResponse {
   deliveries: Order[]
 }
 
-export interface ReportSummary {
-  store: { id: number; name: string }
-  period: string
-  date_range: { start: string; end: string }
-  summary: {
-    total_orders: number
-    total_income: number
-    daily_average: number
-    status_breakdown: Record<string, number>
-    top_products: Array<{ name: string; total_sold: number; total_revenue: number }>
-    delivery_stats: Array<{ id: number; name: string; deliveries: number }>
-  }
-}
-
 export interface UserListResponse {
   users: User[]
   pagination: {

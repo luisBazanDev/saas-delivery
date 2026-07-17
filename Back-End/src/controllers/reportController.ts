@@ -46,7 +46,7 @@ export async function getReportSummary(req: Request, res: Response) {
       where: { store_id: storeId, created_at: { [Op.gte]: start, [Op.lte]: end } },
     }),
 
-    Order.findAll({
+    Order.findOne({
       where: {
         store_id: storeId,
         status: { [Op.in]: ['DELIVERED'] },
@@ -73,41 +73,36 @@ export async function getReportSummary(req: Request, res: Response) {
         { model: Product, attributes: ['name'] },
       ],
       attributes: [
-        [col('product.name'), 'product_name'],
-        [fn('SUM', col('order_items.quantity')), 'total_sold'],
-        [fn('SUM', literal('order_items.quantity * order_items.subtotal')), 'total_revenue'],
+        [col('Product.name'), 'product_name'],
+        [fn('SUM', col('OrderProduct.quantity')), 'total_sold'],
+        [fn('SUM', literal('OrderProduct.quantity * OrderProduct.subtotal')), 'total_revenue'],
       ],
-      group: ['product_id', 'product.name'],
+      group: ['product_id', 'Product.name'],
       order: [[literal('total_sold'), 'DESC']],
       limit: 10,
       raw: true,
     }),
 
-    User.findAll({
-      where: { store_id: storeId, role_name: 'STORE_DELIVERY' },
-      include: [
-        {
-          model: Order,
-          as: 'deliveryOrders',
-          where: { created_at: { [Op.gte]: start, [Op.lte]: end } },
-          attributes: [],
-        },
-      ],
+    Order.findAll({
+      where: {
+        store_id: storeId,
+        created_at: { [Op.gte]: start, [Op.lte]: end },
+      },
       attributes: [
-        'id',
-        'name',
-        [fn('COUNT', col('deliveryOrders.id')), 'deliveries_count'],
+        'delivery_user_id',
+        [fn('COUNT', col('id')), 'deliveries_count'],
       ],
-      group: ['users.id', 'users.name'],
+      group: ['delivery_user_id'],
+      having: literal('delivery_user_id IS NOT NULL'),
       order: [[literal('deliveries_count'), 'DESC']],
       raw: true,
     }),
   ])
 
-  const incomeRow = (totalIncome as any)[0] as { total_income: string | null } | undefined
+  const incomeRow = (totalIncome as any) as { total_income: string | null } | undefined
   const statusRows = (ordersByStatus as any) as Array<{ status: string; count: string }>
   const productRows = (topProducts as any) as Array<{ product_name: string; total_sold: string; total_revenue: string }>
-  const deliveryRows = (deliveryStats as any) as Array<{ id: number; username: string; deliveries_count: string }>
+  const deliveryRows = (deliveryStats as any) as Array<{ delivery_user_id: number; deliveries_count: string }>
 
   const statusBreakdown = statusRows.reduce((acc, s) => {
     acc[s.status] = Number(s.count)
@@ -117,6 +112,12 @@ export async function getReportSummary(req: Request, res: Response) {
   const days = Math.max(1, Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)))
   const income = Number(incomeRow?.total_income || 0)
   const dailyAverage = totalOrders > 0 ? income / days : 0
+
+  const deliveryUserIds = deliveryRows.map((d) => d.delivery_user_id)
+  const deliveryUsers = deliveryUserIds.length > 0
+    ? await User.findAll({ where: { id: deliveryUserIds }, attributes: ['id', 'name'] })
+    : []
+  const userMap = new Map(deliveryUsers.map((u) => [u.id, u.name]))
 
   return res.json({
     store: { id: store.id, name: store.name },
@@ -133,8 +134,8 @@ export async function getReportSummary(req: Request, res: Response) {
         total_revenue: Number(p.total_revenue),
       })),
       delivery_stats: deliveryRows.map((d) => ({
-        id: d.id,
-        username: d.username,
+        id: d.delivery_user_id,
+        name: userMap.get(d.delivery_user_id) || 'Unknown',
         deliveries: Number(d.deliveries_count),
       })),
     },
@@ -278,7 +279,7 @@ export async function exportBusinessReport(req: Request, res: Response) {
       where: { store_id: storeId, created_at: { [Op.gte]: start, [Op.lte]: end } },
     }),
 
-    Order.findAll({
+    Order.findOne({
       where: {
         store_id: storeId,
         status: { [Op.in]: ['DELIVERED'] },
@@ -305,45 +306,46 @@ export async function exportBusinessReport(req: Request, res: Response) {
         { model: Product, attributes: ['name'] },
       ],
       attributes: [
-        [col('product.name'), 'product_name'],
-        [fn('SUM', col('order_items.quantity')), 'total_sold'],
-        [fn('SUM', literal('order_items.quantity * order_items.subtotal')), 'total_revenue'],
+        [col('Product.name'), 'product_name'],
+        [fn('SUM', col('OrderProduct.quantity')), 'total_sold'],
+        [fn('SUM', literal('OrderProduct.quantity * OrderProduct.subtotal')), 'total_revenue'],
       ],
-      group: ['product_id', 'product.name'],
+      group: ['product_id', 'Product.name'],
       order: [[literal('total_sold'), 'DESC']],
       limit: 10,
       raw: true,
     }),
 
-    User.findAll({
-      where: { store_id: storeId, role_name: 'STORE_DELIVERY' },
-      include: [
-        {
-          model: Order,
-          as: 'deliveryOrders',
-          where: { created_at: { [Op.gte]: start, [Op.lte]: end } },
-          attributes: [],
-        },
-      ],
+    Order.findAll({
+      where: {
+        store_id: storeId,
+        created_at: { [Op.gte]: start, [Op.lte]: end },
+      },
       attributes: [
-        'id',
-        'name',
-        [fn('COUNT', col('deliveryOrders.id')), 'deliveries_count'],
+        'delivery_user_id',
+        [fn('COUNT', col('id')), 'deliveries_count'],
       ],
-      group: ['users.id', 'users.name'],
+      group: ['delivery_user_id'],
+      having: literal('delivery_user_id IS NOT NULL'),
       order: [[literal('deliveries_count'), 'DESC']],
       raw: true,
     }),
   ])
 
-  const incomeRow = (totalIncome as any)[0] as { total_income: string | null } | undefined
+  const incomeRow = (totalIncome as any) as { total_income: string | null } | undefined
   const statusRows = (ordersByStatus as any) as Array<{ status: string; count: string }>
   const productRows = (topProducts as any) as Array<{ product_name: string; total_sold: string; total_revenue: string }>
-  const deliveryRows = (deliveryStats as any) as Array<{ id: number; username: string; deliveries_count: string }>
+  const deliveryRows = (deliveryStats as any) as Array<{ delivery_user_id: number; deliveries_count: string }>
 
   const income = Number(incomeRow?.total_income || 0)
   const days = Math.max(1, Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)))
   const dailyAverage = totalOrders > 0 ? income / days : 0
+
+  const deliveryUserIds = deliveryRows.map((d) => d.delivery_user_id)
+  const deliveryUsers = deliveryUserIds.length > 0
+    ? await User.findAll({ where: { id: deliveryUserIds }, attributes: ['id', 'name'] })
+    : []
+  const userMap = new Map(deliveryUsers.map((u) => [u.id, u.name]))
 
   const html = `
 <!DOCTYPE html>
@@ -400,7 +402,7 @@ export async function exportBusinessReport(req: Request, res: Response) {
   <table>
     <thead><tr><th>Driver</th><th>Deliveries</th></tr></thead>
     <tbody>
-      ${deliveryRows.map((d) => `<tr><td>${d.username}</td><td>${d.deliveries_count}</td></tr>`).join('')}
+      ${deliveryRows.map((d) => `<tr><td>${userMap.get(d.delivery_user_id) || 'Unknown'}</td><td>${d.deliveries_count}</td></tr>`).join('')}
     </tbody>
   </table>
 

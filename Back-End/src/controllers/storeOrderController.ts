@@ -75,6 +75,33 @@ export async function createOrder(req: Request, res: Response) {
     return res.status(400).json({ error: 'customer_name and products are required' })
   }
 
+  const stockErrors: string[] = []
+  const productsToUpdate: { id: number; qty: number }[] = []
+
+  for (const p of products) {
+    const product = await Product.findByPk(p.product_id)
+    if (!product) {
+      stockErrors.push(`Producto no encontrado (id: ${p.product_id})`)
+      continue
+    }
+    if (product.stock != null && product.stock < p.amount) {
+      stockErrors.push(`Stock insuficiente para "${product.name}" (disponible: ${product.stock}, solicitado: ${p.amount})`)
+    } else if (product.stock != null) {
+      productsToUpdate.push({ id: product.id, qty: p.amount })
+    }
+  }
+
+  if (stockErrors.length > 0) {
+    return res.status(400).json({ error: stockErrors.join('; ') })
+  }
+
+  for (const pu of productsToUpdate) {
+    await Product.update(
+      { stock: (await Product.findByPk(pu.id))!.stock! - pu.qty },
+      { where: { id: pu.id } }
+    )
+  }
+
   const code = generateOrderCode()
   const order = await Order.create({
     code,

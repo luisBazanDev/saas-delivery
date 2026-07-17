@@ -73,6 +73,7 @@ export default function OrderKanban({ storeId }: OrderKanbanProps) {
       setCart([])
       setShowForm(false)
       fetchOrders()
+      fetchProducts()
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Error al crear orden')
     } finally {
@@ -81,9 +82,11 @@ export default function OrderKanban({ storeId }: OrderKanbanProps) {
   }
 
   function addToCart(product: Product) {
+    if (product.stock === 0) return
     setCart(prev => {
       const existing = prev.find(item => item.product.id === product.id)
       if (existing) {
+        if (product.stock != null && existing.quantity >= product.stock) return prev
         return prev.map(item => item.product.id === product.id ? { ...item, quantity: item.quantity + 1 } : item)
       }
       return [...prev, { product, quantity: 1 }]
@@ -98,6 +101,7 @@ export default function OrderKanban({ storeId }: OrderKanbanProps) {
     setCart(prev => prev.map(item => {
       if (item.product.id === productId) {
         const newQty = item.quantity + delta
+        if (item.product.stock != null && newQty > item.product.stock) return item
         return newQty > 0 ? { ...item, quantity: newQty } : item
       }
       return item
@@ -242,24 +246,40 @@ export default function OrderKanban({ storeId }: OrderKanbanProps) {
                   </div>
                 </div>
                 <div className="flex-1 overflow-y-auto p-4 space-y-2">
-                  {filteredProducts.map(product => (
-                    <div
-                      key={product.id}
-                      onClick={() => addToCart(product)}
-                      className="bg-bg-base border border-border rounded-lg p-3 cursor-pointer hover:border-accent transition-colors"
-                    >
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <div className="font-medium text-[13px]">{product.name}</div>
-                          {product.description && <div className="text-text-secondary text-[11px] mt-0.5">{product.description}</div>}
+                  {filteredProducts.map(product => {
+                    const isOutOfStock = product.stock === 0
+                    const isLowStock = product.stock != null && product.stock > 0 && product.stock <= 5
+                    const inCart = cart.find(item => item.product.id === product.id)
+                    const atLimit = product.stock != null && inCart && inCart.quantity >= product.stock
+                    return (
+                      <div
+                        key={product.id}
+                        onClick={() => !isOutOfStock && !atLimit && addToCart(product)}
+                        className={`bg-bg-base border rounded-lg p-3 transition-colors ${
+                          isOutOfStock
+                            ? 'border-border opacity-50 cursor-not-allowed'
+                            : atLimit
+                            ? 'border-[#eab308]/50 cursor-not-allowed'
+                            : 'cursor-pointer hover:border-accent'
+                        }`}
+                      >
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <div className="font-medium text-[13px]">{product.name}</div>
+                            {product.description && <div className="text-text-secondary text-[11px] mt-0.5">{product.description}</div>}
+                          </div>
+                          <div className="text-accent font-semibold text-[13px]">S/ {Number(product.price).toFixed(2)}</div>
                         </div>
-                        <div className="text-accent font-semibold text-[13px]">S/ {Number(product.price).toFixed(2)}</div>
+                        {product.stock != null && (
+                          <div className={`text-[11px] mt-1 ${
+                            isOutOfStock ? 'text-danger' : isLowStock ? 'text-[#eab308]' : 'text-text-secondary'
+                          }`}>
+                            {isOutOfStock ? 'Sin stock' : `Stock: ${product.stock}`}
+                          </div>
+                        )}
                       </div>
-                      {product.stock !== undefined && (
-                        <div className="text-text-secondary text-[11px] mt-1">Stock: {product.stock}</div>
-                      )}
-                    </div>
-                  ))}
+                    )
+                  })}
                   {filteredProducts.length === 0 && (
                     <div className="text-center text-text-secondary text-[13px] py-8">No hay productos disponibles</div>
                   )}

@@ -10,6 +10,8 @@ interface ApiOptions extends RequestInit {
 
 async function request<T>(path: string, options: ApiOptions = {}): Promise<T> {
   const token = getToken()
+  console.log(`[HTTP] Request: ${options.method || 'GET'} ${path}`)
+  console.log(`[HTTP] Token: ${token ? 'present' : 'missing'} (${token?.substring(0, 20)}...)`)
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -19,6 +21,8 @@ async function request<T>(path: string, options: ApiOptions = {}): Promise<T> {
   if (token) {
     headers['Authorization'] = `Bearer ${token}`
   }
+
+  console.log(`[HTTP] Headers:`, JSON.stringify(headers))
 
   const res = await fetch(`${API_BASE}${path}`, {
     ...options,

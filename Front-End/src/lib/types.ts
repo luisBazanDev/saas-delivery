@@ -110,7 +110,6 @@ export interface KanbanResponse {
   kanban: {
     PENDING: Order[]
     IN_PROGRESS: Order[]
-    DONE: Order[]
     IN_TRANSIT: Order[]
     DELIVERED: Order[]
   }

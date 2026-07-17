@@ -13,8 +13,27 @@ export async function listOrders(req: Request, res: Response) {
   const storeId = Number(req.params.id)
   if (!storeId) return res.status(400).json({ error: 'store_id is required' })
 
+  // Peru timezone is UTC-5
+  const PERU_OFFSET = -5
+  const now = new Date()
+  const peruNow = new Date(now.getTime() + PERU_OFFSET * 60 * 60 * 1000)
+
+  const peruYear = peruNow.getUTCFullYear()
+  const peruMonth = peruNow.getUTCMonth()
+  const peruDay = peruNow.getUTCDate()
+
+  // Peru 00:00 = UTC 05:00
+  const startOfPeruDay = new Date(Date.UTC(peruYear, peruMonth, peruDay, -PERU_OFFSET, 0, 0, 0))
+  const startOfPeruNextDay = new Date(Date.UTC(peruYear, peruMonth, peruDay + 1, -PERU_OFFSET, 0, 0, 0))
+
   const status = req.query.status ? String(req.query.status) : undefined
-  const where: any = { store_id: storeId }
+  const where: any = {
+    store_id: storeId,
+    created_at: {
+      [Op.gte]: startOfPeruDay,
+      [Op.lt]: startOfPeruNextDay,
+    }
+  }
   if (status) where.status = status
 
   const orders = await Order.findAll({
@@ -32,7 +51,6 @@ export async function listOrders(req: Request, res: Response) {
   const kanban = {
     PENDING: orders.filter((o) => o.status === 'PENDING'),
     IN_PROGRESS: orders.filter((o) => o.status === 'IN_PROGRESS'),
-    DONE: orders.filter((o) => o.status === 'DONE'),
     IN_TRANSIT: orders.filter((o) => o.status === 'IN_TRANSIT'),
     DELIVERED: orders.filter((o) => o.status === 'DELIVERED'),
   }
@@ -88,8 +106,14 @@ export async function createOrder(req: Request, res: Response) {
 }
 
 export async function updateOrderStatus(req: Request, res: Response) {
+  console.log('[STATUS] req.params:', JSON.stringify(req.params))
+  console.log('[STATUS] req.baseUrl:', req.baseUrl)
+  console.log('[STATUS] req.path:', req.path)
+  
   const storeId = Number(req.params.id)
-  const orderId = Number(req.params.id)
+  const orderId = Number(req.params.orderId)
+  console.log('[STATUS] storeId:', storeId, 'orderId:', orderId)
+  
   const { status, delivery_user_id } = req.body
   if (!status) return res.status(400).json({ error: 'status is required' })
 
@@ -118,7 +142,7 @@ export async function updateOrderStatus(req: Request, res: Response) {
 
 export async function deleteOrder(req: Request, res: Response) {
   const storeId = Number(req.params.id)
-  const orderId = Number(req.params.id)
+  const orderId = Number(req.params.orderId)
 
   const order = await Order.findOne({ where: { id: orderId, store_id: storeId } })
   if (!order) return res.status(404).json({ error: 'Order not found' })

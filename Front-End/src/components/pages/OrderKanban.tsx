@@ -15,7 +15,7 @@ const columns = [
 ]
 
 export default function OrderKanban({ storeId }: OrderKanbanProps) {
-  const [kanban, setKanban] = useState<Record<string, Order[]>>({ PENDING: [], IN_PROGRESS: [], IN_TRANSIT: [], DELIVERED: [], DONE: [] })
+  const [kanban, setKanban] = useState<Record<string, Order[]>>({ PENDING: [], IN_PROGRESS: [], IN_TRANSIT: [], DELIVERED: [] })
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState({ customer_name: '', customer_phone: '', address: '' })
@@ -33,7 +33,7 @@ export default function OrderKanban({ storeId }: OrderKanbanProps) {
       const res = await api.get<KanbanResponse>(`/stores/${storeId}/orders`)
       setKanban(res.kanban)
     } catch {
-      setKanban({ PENDING: [], IN_PROGRESS: [], IN_TRANSIT: [], DELIVERED: [], DONE: [] })
+      setKanban({ PENDING: [], IN_PROGRESS: [], IN_TRANSIT: [], DELIVERED: [] })
     } finally {
       setLoading(false)
     }
@@ -160,8 +160,8 @@ export default function OrderKanban({ storeId }: OrderKanbanProps) {
   async function advanceStatus(order: Order) {
     const nextStatus: Record<string, string> = {
       PENDING: 'IN_PROGRESS',
-      IN_PROGRESS: 'DONE',
-      DONE: 'IN_TRANSIT',
+      IN_PROGRESS: 'IN_TRANSIT',
+      IN_TRANSIT: 'DELIVERED',
     }
     const next = nextStatus[order.status]
     if (!next) return
@@ -189,9 +189,9 @@ export default function OrderKanban({ storeId }: OrderKanbanProps) {
           </p>
         )}
         {order.total_amount !== undefined && order.total_amount > 0 && (
-          <p className="mt-1.5 text-[13px] text-accent font-medium">S/ {order.total_amount.toFixed(2)}</p>
+          <p className="mt-1.5 text-[13px] text-accent font-medium">S/ {Number(order.total_amount).toFixed(2)}</p>
         )}
-        {order.status !== 'DELIVERED' && order.status !== 'DONE' && (
+        {order.status !== 'DELIVERED' && (
           <button onClick={() => advanceStatus(order)} className="mt-3 w-full bg-accent text-bg-base border-none py-2 rounded-lg font-semibold cursor-pointer text-[12px] hover:opacity-90">
             Avanzar Estado
           </button>

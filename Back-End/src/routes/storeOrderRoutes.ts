@@ -8,11 +8,11 @@ import {
 import { authMiddleware } from '../middleware/authMiddleware'
 import { requireAnyRole } from '../middleware/requireRole'
 
-const router = Router()
+const router = Router({ mergeParams: true })
 
 router.get('/', authMiddleware, requireAnyRole(['ADMIN', 'STORE_ADMIN', 'STORE_MANAGER', 'STORE_CHEF']), listOrders)
 router.post('/', authMiddleware, requireAnyRole(['ADMIN', 'STORE_ADMIN', 'STORE_MANAGER']), createOrder)
-router.put('/:id/status', authMiddleware, requireAnyRole(['ADMIN', 'STORE_ADMIN', 'STORE_MANAGER']), updateOrderStatus)
-router.delete('/:id', authMiddleware, requireAnyRole(['ADMIN', 'STORE_ADMIN']), deleteOrder)
+router.put('/:orderId/status', authMiddleware, requireAnyRole(['ADMIN', 'STORE_ADMIN', 'STORE_MANAGER']), updateOrderStatus)
+router.delete('/:orderId', authMiddleware, requireAnyRole(['ADMIN', 'STORE_ADMIN']), deleteOrder)
 
 export default router

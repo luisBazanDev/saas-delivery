@@ -4,8 +4,8 @@ import { Order } from '../models/order.model'
 export async function createOrder(req: Request, res: Response) {
   const user = (req as any).user
   const store_id = user.role_name === 'ADMIN' ? req.body.store_id : user.store_id
-  const { code, status, total_amount, delivery_address, customer_name, phone } = req.body
-  const item = await Order.create({ code, store_id, status, total_amount, delivery_address, customer_name, phone })
+  const { code, status, total_amount, delivery_address, customer_name, phone, payment_method } = req.body
+  const item = await Order.create({ code, store_id, status, total_amount, delivery_address, customer_name, phone, payment_method })
   return res.status(201).json(item)
 }
 

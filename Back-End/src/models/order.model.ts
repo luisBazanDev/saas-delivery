@@ -28,6 +28,7 @@ export class Order extends Model<
     declare delivery_user_id?: ForeignKey<User['id']>
     declare customer_name?: string
     declare phone?: string
+    declare payment_method?: string
     declare created_at: CreationOptional<Date>
 
     declare OrderProducts?: NonAttribute<OrderProduct[]>
@@ -78,6 +79,10 @@ Order.init(
         },
         phone: {
             type: DataTypes.STRING(50),
+        },
+        payment_method: {
+            type: DataTypes.STRING(50),
+            allowNull: true,
         },
         created_at: {
             type: DataTypes.DATE,

@@ -7,6 +7,7 @@ import { Product } from '../models/product.model'
 import { Category } from '../models/category.model'
 import { Order } from '../models/order.model'
 import { OrderProduct } from '../models/order-product.model'
+import { PaymentMethod } from '../models/payment-method.model'
 import '../models/associations'
 
 function generateOrderCode(): string {
@@ -205,6 +206,12 @@ export async function seed() {
     ])
     console.log('Created 8 products per store with categories')
 
+    // --- Payment Methods ---
+    const pmEfectivo = await PaymentMethod.create({ name: 'cobrar efectivo' })
+    const pmYapeCobrar = await PaymentMethod.create({ name: 'cobrar yape' })
+    const pmYapePagado = await PaymentMethod.create({ name: 'pagado yape' })
+    console.log('Created 3 payment methods')
+
     // --- Orders ---
     const chiclayoAddresses = [
       { address: 'Calle Los Olmos 456, Chiclayo', lat: -6.7745, lon: -79.8425 },
@@ -225,34 +232,35 @@ export async function seed() {
 
     const orderData = [
       // Store 1 - DELIVERED
-      { store: store1.id, status: 'DELIVERED', total_amount: 139.00, delivery: delivery1.id, customer: 'Ana García', phone: '555-0001', products: [{ id: store1Products[0].id, amount: 1, price: 89.00 }, { id: store1Products[3].id, amount: 2, price: 25.00 }], addrIdx: 0 },
-      { store: store1.id, status: 'DELIVERED', total_amount: 184.00, delivery: delivery2.id, customer: 'Roberto López', phone: '555-0002', products: [{ id: store1Products[1].id, amount: 1, price: 129.00 }, { id: store1Products[5].id, amount: 1, price: 45.00 }, { id: store1Products[4].id, amount: 1, price: 18.00 }], addrIdx: 1 },
-      { store: store1.id, status: 'DELIVERED', total_amount: 250.00, delivery: delivery1.id, customer: 'Carlos Ruiz', phone: '555-0003', products: [{ id: store1Products[1].id, amount: 1, price: 129.00 }, { id: store1Products[2].id, amount: 1, price: 95.00 }, { id: store1Products[6].id, amount: 1, price: 55.00 }], addrIdx: 2 },
+      { store: store1.id, status: 'DELIVERED', total_amount: 139.00, delivery: delivery1.id, customer: 'Ana García', phone: '555-0001', products: [{ id: store1Products[0].id, amount: 1, price: 89.00 }, { id: store1Products[3].id, amount: 2, price: 25.00 }], addrIdx: 0, payment: pmEfectivo.id },
+      { store: store1.id, status: 'DELIVERED', total_amount: 184.00, delivery: delivery2.id, customer: 'Roberto López', phone: '555-0002', products: [{ id: store1Products[1].id, amount: 1, price: 129.00 }, { id: store1Products[5].id, amount: 1, price: 45.00 }, { id: store1Products[4].id, amount: 1, price: 18.00 }], addrIdx: 1, payment: pmYapePagado.id },
+      { store: store1.id, status: 'DELIVERED', total_amount: 250.00, delivery: delivery1.id, customer: 'Carlos Ruiz', phone: '555-0003', products: [{ id: store1Products[1].id, amount: 1, price: 129.00 }, { id: store1Products[2].id, amount: 1, price: 95.00 }, { id: store1Products[6].id, amount: 1, price: 55.00 }], addrIdx: 2, payment: pmEfectivo.id },
       // Store 1 - DONE
-      { store: store1.id, status: 'DONE', total_amount: 114.00, delivery: null, customer: 'María Torres', phone: '555-0004', products: [{ id: store1Products[0].id, amount: 1, price: 89.00 }, { id: store1Products[3].id, amount: 1, price: 25.00 }], addrIdx: 3 },
+      { store: store1.id, status: 'DONE', total_amount: 114.00, delivery: null, customer: 'María Torres', phone: '555-0004', products: [{ id: store1Products[0].id, amount: 1, price: 89.00 }, { id: store1Products[3].id, amount: 1, price: 25.00 }], addrIdx: 3, payment: pmYapeCobrar.id },
       // Store 1 - IN_PROGRESS
-      { store: store1.id, status: 'IN_PROGRESS', total_amount: 224.00, delivery: null, customer: 'Pedro Sánchez', phone: '555-0005', products: [{ id: store1Products[1].id, amount: 1, price: 129.00 }, { id: store1Products[2].id, amount: 1, price: 95.00 }], addrIdx: 4 },
+      { store: store1.id, status: 'IN_PROGRESS', total_amount: 224.00, delivery: null, customer: 'Pedro Sánchez', phone: '555-0005', products: [{ id: store1Products[1].id, amount: 1, price: 129.00 }, { id: store1Products[2].id, amount: 1, price: 95.00 }], addrIdx: 4, payment: pmEfectivo.id },
       // Store 1 - PENDING
-      { store: store1.id, status: 'PENDING', total_amount: 95.00, delivery: null, customer: 'Laura Díaz', phone: '555-0006', products: [{ id: store1Products[2].id, amount: 1, price: 95.00 }], addrIdx: 5 },
-      { store: store1.id, status: 'PENDING', total_amount: 180.00, delivery: null, customer: 'Diego Morales', phone: '555-0007', products: [{ id: store1Products[0].id, amount: 2, price: 89.00 }], addrIdx: 6 },
+      { store: store1.id, status: 'PENDING', total_amount: 95.00, delivery: null, customer: 'Laura Díaz', phone: '555-0006', products: [{ id: store1Products[2].id, amount: 1, price: 95.00 }], addrIdx: 5, payment: pmYapeCobrar.id },
+      { store: store1.id, status: 'PENDING', total_amount: 180.00, delivery: null, customer: 'Diego Morales', phone: '555-0007', products: [{ id: store1Products[0].id, amount: 2, price: 89.00 }], addrIdx: 6, payment: pmEfectivo.id },
       // Store 1 - IN_TRANSIT
-      { store: store1.id, status: 'IN_TRANSIT', total_amount: 174.00, delivery: delivery2.id, customer: 'Sofía Hernández', phone: '555-0008', products: [{ id: store1Products[1].id, amount: 1, price: 129.00 }, { id: store1Products[5].id, amount: 1, price: 45.00 }], addrIdx: 7 },
+      { store: store1.id, status: 'IN_TRANSIT', total_amount: 174.00, delivery: delivery2.id, customer: 'Sofía Hernández', phone: '555-0008', products: [{ id: store1Products[1].id, amount: 1, price: 129.00 }, { id: store1Products[5].id, amount: 1, price: 45.00 }], addrIdx: 7, payment: pmYapePagado.id },
 
       // Store 2 - DELIVERED
-      { store: store2.id, status: 'DELIVERED', total_amount: 194.00, delivery: delivery3.id, customer: 'Fernando Castro', phone: '555-0009', products: [{ id: store2Products[0].id, amount: 1, price: 149.00 }, { id: store2Products[4].id, amount: 1, price: 25.00 }, { id: store2Products[6].id, amount: 1, price: 40.00 }], addrIdx: 8 },
-      { store: store2.id, status: 'DELIVERED', total_amount: 169.00, delivery: delivery3.id, customer: 'Valentina Reyes', phone: '555-0010', products: [{ id: store2Products[1].id, amount: 1, price: 169.00 }], addrIdx: 9 },
+      { store: store2.id, status: 'DELIVERED', total_amount: 194.00, delivery: delivery3.id, customer: 'Fernando Castro', phone: '555-0009', products: [{ id: store2Products[0].id, amount: 1, price: 149.00 }, { id: store2Products[4].id, amount: 1, price: 25.00 }, { id: store2Products[6].id, amount: 1, price: 40.00 }], addrIdx: 8, payment: pmEfectivo.id },
+      { store: store2.id, status: 'DELIVERED', total_amount: 169.00, delivery: delivery3.id, customer: 'Valentina Reyes', phone: '555-0010', products: [{ id: store2Products[1].id, amount: 1, price: 169.00 }], addrIdx: 9, payment: pmYapePagado.id },
       // Store 2 - DONE
-      { store: store2.id, status: 'DONE', total_amount: 328.00, delivery: null, customer: 'Andrés Vargas', phone: '555-0011', products: [{ id: store2Products[1].id, amount: 1, price: 169.00 }, { id: store2Products[3].id, amount: 1, price: 179.00 }], addrIdx: 10 },
+      { store: store2.id, status: 'DONE', total_amount: 328.00, delivery: null, customer: 'Andrés Vargas', phone: '555-0011', products: [{ id: store2Products[1].id, amount: 1, price: 169.00 }, { id: store2Products[3].id, amount: 1, price: 179.00 }], addrIdx: 10, payment: pmEfectivo.id },
       // Store 2 - IN_PROGRESS
-      { store: store2.id, status: 'IN_PROGRESS', total_amount: 159.00, delivery: null, customer: 'Isabella Mendoza', phone: '555-0012', products: [{ id: store2Products[2].id, amount: 1, price: 159.00 }], addrIdx: 11 },
+      { store: store2.id, status: 'IN_PROGRESS', total_amount: 159.00, delivery: null, customer: 'Isabella Mendoza', phone: '555-0012', products: [{ id: store2Products[2].id, amount: 1, price: 159.00 }], addrIdx: 11, payment: pmYapeCobrar.id },
       // Store 2 - PENDING
-      { store: store2.id, status: 'PENDING', total_amount: 254.00, delivery: null, customer: 'Mateo Jiménez', phone: '555-0013', products: [{ id: store2Products[0].id, amount: 1, price: 149.00 }, { id: store2Products[5].id, amount: 1, price: 30.00 }, { id: store2Products[7].id, amount: 1, price: 75.00 }], addrIdx: 12 },
+      { store: store2.id, status: 'PENDING', total_amount: 254.00, delivery: null, customer: 'Mateo Jiménez', phone: '555-0013', products: [{ id: store2Products[0].id, amount: 1, price: 149.00 }, { id: store2Products[5].id, amount: 1, price: 30.00 }, { id: store2Products[7].id, amount: 1, price: 75.00 }], addrIdx: 12, payment: pmEfectivo.id },
       // Store 2 - IN_TRANSIT
-      { store: store2.id, status: 'IN_TRANSIT', total_amount: 204.00, delivery: delivery3.id, customer: 'Camila Ortiz', phone: '555-0014', products: [{ id: store2Products[3].id, amount: 1, price: 179.00 }, { id: store2Products[6].id, amount: 1, price: 40.00 }], addrIdx: 13 },
+      { store: store2.id, status: 'IN_TRANSIT', total_amount: 204.00, delivery: delivery3.id, customer: 'Camila Ortiz', phone: '555-0014', products: [{ id: store2Products[3].id, amount: 1, price: 179.00 }, { id: store2Products[6].id, amount: 1, price: 40.00 }], addrIdx: 13, payment: pmYapePagado.id },
     ]
 
     for (const od of orderData) {
       const addr = chiclayoAddresses[od.addrIdx]
+      const paymentMethod = od.payment === pmEfectivo.id ? pmEfectivo.name : od.payment === pmYapeCobrar.id ? pmYapeCobrar.name : pmYapePagado.name
       const order = await Order.create({
         code: generateOrderCode(),
         store_id: od.store,
@@ -264,6 +272,7 @@ export async function seed() {
         delivery_user_id: od.delivery || undefined,
         customer_name: od.customer,
         phone: od.phone,
+        payment_method: paymentMethod,
       })
 
       for (const p of od.products) {

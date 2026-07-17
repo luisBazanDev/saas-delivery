@@ -86,6 +86,7 @@ export interface Order {
   delivery_lon?: number
   total_amount?: number
   delivery_user_id?: number
+  payment_method?: string
   created_at?: string
   OrderProducts?: OrderProduct[]
   deliveryUser?: {

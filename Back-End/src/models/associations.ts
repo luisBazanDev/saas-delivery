@@ -5,6 +5,7 @@ import { Order } from "./order.model"
 import { OrderProduct } from "./order-product.model"
 import { Subscription } from "./subscription.model"
 import { Category } from "./category.model"
+import { PaymentMethod } from "./payment-method.model"
 
 Subscription.hasMany(Store, {
     foreignKey: "subscription_id"

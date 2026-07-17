@@ -166,11 +166,19 @@ export default function DeliveryView({ storeId }: DeliveryViewProps) {
                 {myOrder.customer_name || 'Cliente'}
               </p>
 
-              {myOrder.total_amount !== undefined && myOrder.total_amount > 0 && (
+              {myOrder.payment_method === 'pagado yape' ? (
+                <div className="mt-4 px-3 py-3 bg-[#22c55e]/10 border border-[#22c55e]/30 rounded-lg text-[12px] text-[#22c55e] font-medium">
+                  ✅ YA PAGADO - Yape: S/ {Number(myOrder.total_amount).toFixed(2)}
+                </div>
+              ) : myOrder.payment_method === 'cobrar yape' ? (
+                <div className="mt-4 px-3 py-3 bg-[#8b5cf6]/10 border border-[#8b5cf6]/20 rounded-lg text-[12px] text-text-secondary">
+                  Cobrar vía Yape: S/ {Number(myOrder.total_amount).toFixed(2)}
+                </div>
+              ) : myOrder.total_amount !== undefined && myOrder.total_amount > 0 ? (
                 <div className="mt-4 px-3 py-3 bg-accent/5 border border-accent/20 rounded-lg text-[12px] text-text-secondary">
                   Cobrar exacto: S/ {Number(myOrder.total_amount).toFixed(2)} en efectivo.
                 </div>
-              )}
+              ) : null}
 
               <button
                 onClick={handleDelivered}
@@ -216,6 +224,17 @@ export default function DeliveryView({ storeId }: DeliveryViewProps) {
                     {order.customer_name && (
                       <p className="text-[12px] text-text-secondary mt-0.5">{order.customer_name}</p>
                     )}
+                    {order.payment_method && (
+                      <p className={`text-[11px] mt-1 font-medium ${
+                        order.payment_method === 'pagado yape' ? 'text-[#22c55e]' :
+                        order.payment_method === 'cobrar yape' ? 'text-[#8b5cf6]' :
+                        'text-text-secondary'
+                      }`}>
+                        {order.payment_method === 'pagado yape' ? '✅ Pagado yape' :
+                         order.payment_method === 'cobrar yape' ? '💜 Cobrar yape' :
+                         '💵 Cobrar efectivo'}
+                      </p>
+                    )}
                   </div>
                 ))}
               </div>
@@ -230,6 +249,15 @@ export default function DeliveryView({ storeId }: DeliveryViewProps) {
               <div key={order.id} className="px-3 py-2 rounded text-[13px] text-text-secondary opacity-60 mb-1">
                 <span className="font-medium">{order.code || `#${order.id}`}</span>
                 <span className="ml-2">→ {order.deliveryUser?.name || 'Asignado'}</span>
+                {order.payment_method && (
+                  <span className={`ml-2 text-[11px] ${
+                    order.payment_method === 'pagado yape' ? 'text-[#22c55e]' :
+                    order.payment_method === 'cobrar yape' ? 'text-[#8b5cf6]' :
+                    'text-text-secondary'
+                  }`}>
+                    ({order.payment_method})
+                  </span>
+                )}
               </div>
             ))}
           </div>

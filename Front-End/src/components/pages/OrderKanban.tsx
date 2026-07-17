@@ -20,7 +20,7 @@ export default function OrderKanban({ storeId }: OrderKanbanProps) {
   const [kanban, setKanban] = useState<Record<string, Order[]>>({ PENDING: [], IN_PROGRESS: [], IN_TRANSIT: [], DELIVERED: [] })
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
-  const [form, setForm] = useState({ customer_name: '', customer_phone: '', address: '', delivery_lat: undefined as number | undefined, delivery_lon: undefined as number | undefined })
+  const [form, setForm] = useState({ customer_name: '', customer_phone: '', address: '', delivery_lat: undefined as number | undefined, delivery_lon: undefined as number | undefined, payment_method: 'cobrar efectivo' })
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null)
@@ -92,6 +92,7 @@ export default function OrderKanban({ storeId }: OrderKanbanProps) {
         delivery_address: form.address,
         delivery_lat: form.delivery_lat,
         delivery_lon: form.delivery_lon,
+        payment_method: form.payment_method,
         total_amount: total,
         products: cart.map(item => ({
           product_id: item.product.id,
@@ -99,7 +100,7 @@ export default function OrderKanban({ storeId }: OrderKanbanProps) {
           price: Number(item.product.price),
         })),
       })
-      setForm({ customer_name: '', customer_phone: '', address: '', delivery_lat: undefined, delivery_lon: undefined })
+      setForm({ customer_name: '', customer_phone: '', address: '', delivery_lat: undefined, delivery_lon: undefined, payment_method: 'cobrar efectivo' })
       setCart([])
       setShowForm(false)
       fetchOrders()
@@ -226,6 +227,9 @@ export default function OrderKanban({ storeId }: OrderKanbanProps) {
         )}
         {order.total_amount !== undefined && order.total_amount > 0 && (
           <p className="mt-1.5 text-[13px] text-accent font-medium">S/ {Number(order.total_amount).toFixed(2)}</p>
+        )}
+        {order.payment_method && (
+          <p className="mt-1.5 text-[12px] text-text-secondary capitalize">{order.payment_method}</p>
         )}
         {order.status !== 'DELIVERED' && (
           <button onClick={() => advanceStatus(order)} className="mt-3 w-full bg-accent text-bg-base border-none py-2 rounded-lg font-semibold cursor-pointer text-[12px] hover:opacity-90">
@@ -408,6 +412,20 @@ export default function OrderKanban({ storeId }: OrderKanbanProps) {
                       setForm({ ...form, address, delivery_lat: lat, delivery_lon: lon })
                     }}
                   />
+
+                  <div>
+                    <label className="block text-[11px] text-text-secondary uppercase tracking-[1px] mb-1">Método de pago *</label>
+                    <select
+                      value={form.payment_method}
+                      onChange={(e) => setForm({ ...form, payment_method: e.target.value })}
+                      className="w-full bg-bg-base border border-border px-3 py-2 rounded-lg text-text-primary outline-none focus:border-accent text-[13px]"
+                      required
+                    >
+                      <option value="cobrar efectivo">Cobrar efectivo</option>
+                      <option value="cobrar yape">Cobrar yape</option>
+                      <option value="pagado yape">Pagado yape</option>
+                    </select>
+                  </div>
 
                   {(form.delivery_lat || form.address) && (
                     <div className="mt-3 border border-border rounded-lg overflow-hidden" style={{ height: '200px' }}>

@@ -23,6 +23,8 @@ export class Order extends Model<
     declare status?: string
     declare total_amount?: number
     declare delivery_address?: string
+    declare delivery_lat?: number
+    declare delivery_lon?: number
     declare delivery_user_id?: ForeignKey<User['id']>
     declare customer_name?: string
     declare phone?: string
@@ -54,6 +56,14 @@ Order.init(
         },
         delivery_address: {
             type: DataTypes.STRING(255),
+        },
+        delivery_lat: {
+            type: DataTypes.DECIMAL(10, 8),
+            allowNull: true,
+        },
+        delivery_lon: {
+            type: DataTypes.DECIMAL(11, 8),
+            allowNull: true,
         },
         delivery_user_id: {
             type: DataTypes.INTEGER,

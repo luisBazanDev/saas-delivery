@@ -19,6 +19,7 @@ import storeOrderRoutes from './src/routes/storeOrderRoutes'
 import kitchenRoutes from './src/routes/kitchenRoutes'
 import deliveryRoutes from './src/routes/deliveryRoutes'
 import reportRoutes from './src/routes/reportRoutes'
+import geocodeRoutes from './src/routes/geocodeRoutes'
 
 import { requestLogger } from './src/middleware/requestLogger'
 import { errorHandler } from './src/middleware/errorHandler'
@@ -54,6 +55,7 @@ app.use('/api/stores/:id/orders', storeOrderRoutes)
 app.use('/api/stores/:id/kitchen', kitchenRoutes)
 app.use('/api/stores/:id/delivery', deliveryRoutes)
 app.use('/api/stores/:id/reports', reportRoutes)
+app.use('/api/geocode', geocodeRoutes)
 app.use('/api/stores', storeRoutes)
 app.use('/api/orders', orderRoutes)
 

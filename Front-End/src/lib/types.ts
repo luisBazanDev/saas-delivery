@@ -34,6 +34,8 @@ export interface User {
   email?: string
   role_name: UserRole
   store_id?: number
+  lat?: number
+  lon?: number
   created_at?: string
   Store?: Store
 }
@@ -70,6 +72,8 @@ export interface Order {
   customer_name?: string
   phone?: string
   delivery_address?: string
+  delivery_lat?: number
+  delivery_lon?: number
   total_amount?: number
   delivery_user_id?: number
   created_at?: string

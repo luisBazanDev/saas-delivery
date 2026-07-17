@@ -70,7 +70,7 @@ export async function createOrder(req: Request, res: Response) {
   console.log('[ORDER] storeId:', storeId)
   if (!storeId || isNaN(storeId)) return res.status(400).json({ error: 'store_id is required' })
 
-  const { customer_name, phone, delivery_address, total_amount, products } = req.body
+  const { customer_name, phone, delivery_address, delivery_lat, delivery_lon, total_amount, products } = req.body
   if (!customer_name || !products || products.length === 0) {
     return res.status(400).json({ error: 'customer_name and products are required' })
   }
@@ -110,6 +110,8 @@ export async function createOrder(req: Request, res: Response) {
     customer_name,
     phone,
     delivery_address,
+    delivery_lat,
+    delivery_lon,
     total_amount: total_amount || 0,
   })
 

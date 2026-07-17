@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { api } from '../../lib/http'
-import type { DashboardResponse } from '../../lib/types'
-import { MapPin, Bike } from 'lucide-react'
+import type { DashboardResponse, User } from '../../lib/types'
+import StoreMap from './StoreMap'
 
 interface StoreDashboardProps {
   storeId: string
@@ -10,6 +10,8 @@ interface StoreDashboardProps {
 export default function StoreDashboard({ storeId }: StoreDashboardProps) {
   const [data, setData] = useState<DashboardResponse | null>(null)
   const [loading, setLoading] = useState(true)
+  const [storeLocation, setStoreLocation] = useState<{ lat: number; lon: number; name: string } | null>(null)
+  const [deliveryUsers, setDeliveryUsers] = useState<Array<{ id: number; name: string; lat: number | null; lon: number | null }>>([])
 
   useEffect(() => {
     api.get<DashboardResponse>(`/stores/${storeId}/dashboard`)
@@ -18,10 +20,48 @@ export default function StoreDashboard({ storeId }: StoreDashboardProps) {
       .finally(() => setLoading(false))
   }, [storeId])
 
+  useEffect(() => {
+    api.get(`/stores/${storeId}`)
+      .then((store: any) => {
+        if (store.lat && store.lon) {
+          setStoreLocation({ lat: store.lat, lon: store.lon, name: store.name })
+        }
+      })
+      .catch(() => {})
+  }, [storeId])
+
+  useEffect(() => {
+    const fetchDeliveryUsers = () => {
+      api.get<{ users: User[] }>(`/stores/${storeId}/delivery/users`)
+        .then((res) => {
+          setDeliveryUsers(res.users.map((u) => ({ id: u.id, name: u.name, lat: u.lat ?? null, lon: u.lon ?? null })))
+        })
+        .catch(() => {})
+    }
+
+    fetchDeliveryUsers()
+    const interval = setInterval(fetchDeliveryUsers, 10000)
+    return () => clearInterval(interval)
+  }, [storeId])
+
   if (loading) return <p className="text-text-secondary text-sm">Cargando dashboard...</p>
   if (!data) return <p className="text-text-secondary text-sm">No hay datos disponibles</p>
 
   const { summary, active_deliveries } = data
+
+  const deliveryMarkers = active_deliveries
+    .filter((order) => order.delivery_lat && order.delivery_lon)
+    .map((order) => ({
+      id: order.id,
+      lat: order.delivery_lat!,
+      lon: order.delivery_lon!,
+      label: order.delivery_address || '',
+      status: order.status,
+    }))
+
+  const mapCenter: [number, number] = storeLocation
+    ? [storeLocation.lat, storeLocation.lon]
+    : [-6.7714, -79.8390]
 
   return (
     <div>
@@ -42,21 +82,16 @@ export default function StoreDashboard({ storeId }: StoreDashboardProps) {
 
       <div className="bg-bg-surface border border-border rounded-lg overflow-hidden mb-5">
         <div className="px-6 py-5 border-b border-border">
-          <h3 className="text-[16px] font-semibold">Mapa de Repartidores Activos (/store/{storeId})</h3>
+          <h3 className="text-[16px] font-semibold">Mapa de Repartidores Activos</h3>
         </div>
-        <div className="h-[350px] bg-bg-elevated relative flex justify-center items-center" style={{ backgroundImage: 'radial-gradient(#222 1px, transparent 1px)', backgroundSize: '20px 20px' }}>
-          {active_deliveries.length > 0 ? (
-            active_deliveries.slice(0, 6).map((order, i) => (
-              <div key={order.id} className="absolute" style={{ top: `${30 + (i * 12) % 50}%`, left: `${20 + (i * 18) % 60}%` }}>
-                <MapPin size={24} className="text-danger absolute -top-1 -left-1" />
-                <Bike size={20} className="text-accent" />
-              </div>
-            ))
-          ) : (
-            <p className="text-text-secondary text-sm">No hay repartidores activos</p>
-          )}
-          <span className="absolute bottom-5 right-5 px-2 py-1 rounded text-[11px] border border-accent/30 text-accent">GPS En Vivo</span>
-        </div>
+        <StoreMap
+          center={mapCenter}
+          storeLocation={storeLocation || undefined}
+          deliveryMarkers={deliveryMarkers}
+          deliveryUsers={deliveryUsers}
+          height="400px"
+          interactive={false}
+        />
       </div>
 
       {active_deliveries.length > 0 && (

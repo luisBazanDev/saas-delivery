@@ -17,6 +17,8 @@ export class User extends Model<InferAttributes<User>, InferCreationAttributes<U
     declare email?: string
     declare role_name: UserRole
     declare store_id: ForeignKey<Store['id']> | null
+    declare lat?: number
+    declare lon?: number
     declare created_at: CreationOptional<Date>
 }
 
@@ -49,6 +51,14 @@ User.init({
             model: Store,
             key: 'id'
         }
+    },
+    lat: {
+        type: DataTypes.DECIMAL(10, 8),
+        allowNull: true,
+    },
+    lon: {
+        type: DataTypes.DECIMAL(11, 8),
+        allowNull: true,
     },
     created_at: {
         type: DataTypes.DATE,

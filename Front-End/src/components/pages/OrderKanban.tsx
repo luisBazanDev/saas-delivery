@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react'
 import { api } from '../../lib/http'
 import type { Order, KanbanResponse, Product } from '../../lib/types'
 import { Plus, FileText, Trash2, MapPin, Search, X, Minus, Plus as PlusIcon } from 'lucide-react'
+import AddressSearch from './AddressSearch'
+import StoreMap from './StoreMap'
 
 interface OrderKanbanProps {
   storeId: string
@@ -18,15 +20,25 @@ export default function OrderKanban({ storeId }: OrderKanbanProps) {
   const [kanban, setKanban] = useState<Record<string, Order[]>>({ PENDING: [], IN_PROGRESS: [], IN_TRANSIT: [], DELIVERED: [] })
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
-  const [form, setForm] = useState({ customer_name: '', customer_phone: '', address: '' })
+  const [form, setForm] = useState({ customer_name: '', customer_phone: '', address: '', delivery_lat: undefined as number | undefined, delivery_lon: undefined as number | undefined })
   const [products, setProducts] = useState<Product[]>([])
   const [cart, setCart] = useState<{ product: Product; quantity: number }[]>([])
   const [productSearch, setProductSearch] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [storeLocation, setStoreLocation] = useState<{ lat: number; lon: number } | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => { fetchOrders() }, [storeId])
   useEffect(() => { fetchProducts() }, [storeId])
+  useEffect(() => {
+    api.get(`/stores/${storeId}`)
+      .then((store: any) => {
+        if (store.lat && store.lon) {
+          setStoreLocation({ lat: store.lat, lon: store.lon })
+        }
+      })
+      .catch(() => {})
+  }, [storeId])
 
   async function fetchOrders() {
     try {
@@ -62,6 +74,8 @@ export default function OrderKanban({ storeId }: OrderKanbanProps) {
         customer_name: form.customer_name,
         phone: form.customer_phone,
         delivery_address: form.address,
+        delivery_lat: form.delivery_lat,
+        delivery_lon: form.delivery_lon,
         total_amount: total,
         products: cart.map(item => ({
           product_id: item.product.id,
@@ -69,7 +83,7 @@ export default function OrderKanban({ storeId }: OrderKanbanProps) {
           price: Number(item.product.price),
         })),
       })
-      setForm({ customer_name: '', customer_phone: '', address: '' })
+      setForm({ customer_name: '', customer_phone: '', address: '', delivery_lat: undefined, delivery_lon: undefined })
       setCart([])
       setShowForm(false)
       fetchOrders()
@@ -340,15 +354,29 @@ export default function OrderKanban({ storeId }: OrderKanbanProps) {
                       className="w-full bg-bg-base border border-border px-3 py-2 rounded-lg text-text-primary outline-none focus:border-accent text-[13px]"
                     />
                   </div>
-                  <div>
-                    <label className="block text-[11px] text-text-secondary uppercase tracking-[1px] mb-1">Dirección</label>
-                    <input
-                      type="text"
-                      value={form.address}
-                      onChange={(e) => setForm({ ...form, address: e.target.value })}
-                      className="w-full bg-bg-base border border-border px-3 py-2 rounded-lg text-text-primary outline-none focus:border-accent text-[13px]"
-                    />
-                  </div>
+                  <AddressSearch
+                    initialValue={form.address}
+                    onSelect={(address, lat, lon) => {
+                      setForm({ ...form, address, delivery_lat: lat, delivery_lon: lon })
+                    }}
+                  />
+
+                  {(form.delivery_lat || form.address) && (
+                    <div className="mt-3 border border-border rounded-lg overflow-hidden" style={{ height: '200px' }}>
+                      <StoreMap
+                        center={form.delivery_lat && form.delivery_lon ? [form.delivery_lat, form.delivery_lon] : (storeLocation ? [storeLocation.lat, storeLocation.lon] : [-6.7714, -79.8390])}
+                        draggableMarker={form.delivery_lat && form.delivery_lon ? { lat: form.delivery_lat, lon: form.delivery_lon } : undefined}
+                        onMarkerDragEnd={(lat, lon) => {
+                          setForm({ ...form, delivery_lat: lat, delivery_lon: lon })
+                        }}
+                        onClick={(lat, lon) => {
+                          setForm({ ...form, delivery_lat: lat, delivery_lon: lon })
+                        }}
+                        height="200px"
+                        zoom={15}
+                      />
+                    </div>
+                  )}
                 </form>
 
                 <div className="p-4 border-t border-border flex gap-2">

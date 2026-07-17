@@ -124,3 +124,35 @@ export async function getActiveDeliveries(req: Request, res: Response) {
 
   return res.json({ deliveries: filteredDeliveries })
 }
+
+export async function updateDeliveryUserLocation(req: Request, res: Response) {
+  const user = (req as any).user
+  const storeId = user.role_name === 'ADMIN' ? Number(req.params.id) : user.store_id
+  const userId = Number(req.params.userId)
+  const { lat, lon } = req.body
+
+  if (!storeId) return res.status(400).json({ error: 'store_id is required' })
+  if (lat == null || lon == null) return res.status(400).json({ error: 'lat and lon are required' })
+
+  const deliveryUser = await User.findOne({
+    where: { id: userId, store_id: storeId, role_name: 'STORE_DELIVERY' },
+  })
+  if (!deliveryUser) return res.status(404).json({ error: 'Delivery user not found' })
+
+  await deliveryUser.update({ lat, lon })
+
+  return res.json({ success: true, user: { id: deliveryUser.id, name: deliveryUser.name, lat: deliveryUser.lat, lon: deliveryUser.lon } })
+}
+
+export async function getActiveDeliveryUsers(req: Request, res: Response) {
+  const user = (req as any).user
+  const storeId = user.role_name === 'ADMIN' ? Number(req.params.id) : user.store_id
+  if (!storeId) return res.status(400).json({ error: 'store_id is required' })
+
+  const deliveryUsers = await User.findAll({
+    where: { store_id: storeId, role_name: 'STORE_DELIVERY' },
+    attributes: ['id', 'name', 'lat', 'lon'],
+  })
+
+  return res.json({ users: deliveryUsers })
+}

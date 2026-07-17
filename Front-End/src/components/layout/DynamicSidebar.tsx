@@ -41,6 +41,7 @@ const roleConfig: Record<string, { name: string; menu: NavGroup[] }> = {
         label: 'Administración Global',
         items: [
           { id: 'admin-stores', label: 'CRUD Locales', href: '/admin/stores', icon: <Store size={16} /> },
+          { id: 'users', label: 'Usuarios', href: '/users', icon: <Users size={16} /> },
         ],
       },
     ],

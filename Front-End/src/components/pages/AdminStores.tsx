@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { api } from '../../lib/http'
 import type { Store } from '../../lib/types'
-import { Plus, Pencil, Trash2, Store as StoreIcon } from 'lucide-react'
+import { Plus, Pencil, Trash2, Store as StoreIcon, UserPlus } from 'lucide-react'
 
 export default function AdminStores() {
   const [stores, setStores] = useState<Store[]>([])
@@ -10,6 +10,8 @@ export default function AdminStores() {
   const [editing, setEditing] = useState<Store | null>(null)
   const [form, setForm] = useState({ name: '', address: '', phone: '', email: '' })
   const [submitting, setSubmitting] = useState(false)
+  const [createWithUser, setCreateWithUser] = useState(false)
+  const [userForm, setUserForm] = useState({ name: '', password: '' })
 
   useEffect(() => { fetchStores() }, [])
 
@@ -30,6 +32,22 @@ export default function AdminStores() {
     try {
       if (editing) {
         await api.put(`/admin/stores/${editing.id}`, form)
+      } else if (createWithUser) {
+        if (!userForm.name || !userForm.password) {
+          alert('Nombre y contraseña del usuario son requeridos')
+          setSubmitting(false)
+          return
+        }
+        await api.post('/store/new', {
+          name: form.name,
+          address: form.address,
+          phone: form.phone,
+          email: form.email,
+          first_user: {
+            name: userForm.name,
+            password: userForm.password,
+          },
+        })
       } else {
         await api.post('/admin/stores', form)
       }
@@ -44,6 +62,8 @@ export default function AdminStores() {
 
   function resetForm() {
     setForm({ name: '', address: '', phone: '', email: '' })
+    setUserForm({ name: '', password: '' })
+    setCreateWithUser(false)
     setEditing(null)
     setShowForm(false)
   }
@@ -51,6 +71,7 @@ export default function AdminStores() {
   function handleEdit(store: Store) {
     setEditing(store)
     setForm({ name: store.name, address: store.address || '', phone: store.phone || '', email: store.email || '' })
+    setCreateWithUser(false)
     setShowForm(true)
   }
 
@@ -131,6 +152,50 @@ export default function AdminStores() {
                 />
               </div>
             </div>
+
+            {!editing && (
+              <div className="mb-4">
+                <label className="flex items-center gap-2 cursor-pointer text-[14px] text-text-primary">
+                  <input
+                    type="checkbox"
+                    checked={createWithUser}
+                    onChange={(e) => setCreateWithUser(e.target.checked)}
+                    className="w-4 h-4 accent-accent"
+                  />
+                  <UserPlus size={14} className="text-accent" />
+                  Crear usuario STORE_ADMIN inicial para este local
+                </label>
+              </div>
+            )}
+
+            {createWithUser && !editing && (
+              <div className="mb-4 p-4 bg-bg-base rounded-lg border border-border">
+                <p className="text-[12px] text-text-secondary uppercase tracking-[1px] mb-3">Datos del usuario administrador</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[12px] text-text-secondary uppercase tracking-[1px] mb-1.5">Nombre de usuario *</label>
+                    <input
+                      type="text"
+                      value={userForm.name}
+                      onChange={(e) => setUserForm({ ...userForm, name: e.target.value })}
+                      className="w-full bg-bg-surface border border-border px-3 py-2.5 rounded-lg text-text-primary outline-none focus:border-accent text-[14px]"
+                      required={createWithUser}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[12px] text-text-secondary uppercase tracking-[1px] mb-1.5">Contraseña *</label>
+                    <input
+                      type="password"
+                      value={userForm.password}
+                      onChange={(e) => setUserForm({ ...userForm, password: e.target.value })}
+                      className="w-full bg-bg-surface border border-border px-3 py-2.5 rounded-lg text-text-primary outline-none focus:border-accent text-[14px]"
+                      required={createWithUser}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="flex gap-2">
               <button type="submit" disabled={submitting} className="bg-accent text-bg-base border-none px-4 py-2 rounded-lg font-semibold cursor-pointer text-[13px] disabled:opacity-50">
                 {submitting ? 'Guardando...' : editing ? 'Actualizar' : 'Crear'}

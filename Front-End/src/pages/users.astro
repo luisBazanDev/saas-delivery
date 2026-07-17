@@ -6,7 +6,7 @@ import AppLayout from '../components/layout/AppLayout'
 ---
 
 <BaseLayout title="Gestión de Usuarios">
-<ProtectedRoute client:load requiredRole="STORE_ADMIN">
+<ProtectedRoute client:load requiredRoles={['ADMIN', 'STORE_ADMIN']}>
   <AppLayout client:load title="Gestión de Usuarios">
     <UserManagement client:load />
   </AppLayout>

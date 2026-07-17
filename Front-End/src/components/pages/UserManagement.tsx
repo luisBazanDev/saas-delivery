@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { api } from '../../lib/http'
 import { getUser } from '../../lib/auth'
-import type { User, UserRole, UserListResponse } from '../../lib/types'
+import type { User, UserRole, UserListResponse, Store } from '../../lib/types'
 import { Plus, Pencil, Trash2, Users } from 'lucide-react'
 
 const ROLE_LEVEL: Record<string, number> = {
@@ -14,7 +14,7 @@ const ROLE_LEVEL: Record<string, number> = {
 
 function getAvailableRoles(userRole: string): UserRole[] {
   const level = ROLE_LEVEL[userRole] ?? 0
-  const allRoles: UserRole[] = ['STORE_ADMIN', 'STORE_MANAGER', 'STORE_CHEF', 'STORE_DELIVERY']
+  const allRoles: UserRole[] = ['ADMIN', 'STORE_ADMIN', 'STORE_MANAGER', 'STORE_CHEF', 'STORE_DELIVERY']
   return allRoles.filter((r) => ROLE_LEVEL[r] <= level)
 }
 
@@ -27,9 +27,20 @@ export default function UserManagement() {
   const [editing, setEditing] = useState<User | null>(null)
   const [form, setForm] = useState({ name: '', password: '', email: '', role_name: 'STORE_MANAGER' as UserRole, store_id: undefined as number | undefined })
   const [submitting, setSubmitting] = useState(false)
+  const [stores, setStores] = useState<Store[]>([])
 
   const currentUser = getUser()
   const availableRoles = getAvailableRoles(currentUser?.role_name || '')
+  const isAdmin = currentUser?.role_name === 'ADMIN'
+
+  useEffect(() => {
+    if (isAdmin) {
+      api.get<Store[]>('/admin/stores').then(setStores).catch(() => setStores([]))
+    }
+  }, [isAdmin])
+
+  const showStoreSelector = isAdmin && form.role_name !== 'ADMIN'
+  const storeLocked = !isAdmin && currentUser?.store_id
 
   useEffect(() => { fetchUsers() }, [page])
 
@@ -86,6 +97,10 @@ export default function UserManagement() {
     }
   }
 
+  function handleRoleChange(role: UserRole) {
+    setForm({ ...form, role_name: role, store_id: role === 'ADMIN' ? undefined : form.store_id })
+  }
+
   return (
     <div>
       <div className="bg-bg-surface border border-border rounded-lg p-6 mb-5">
@@ -120,10 +135,27 @@ export default function UserManagement() {
               </div>
               <div>
                 <label className="block text-[12px] text-text-secondary uppercase tracking-[1px] mb-1.5">Rol *</label>
-                <select value={form.role_name} onChange={(e) => setForm({ ...form, role_name: e.target.value as UserRole })} className="w-full bg-bg-base border border-border px-3 py-2.5 rounded-lg text-text-primary outline-none focus:border-accent text-[14px]" required>
+                <select value={form.role_name} onChange={(e) => handleRoleChange(e.target.value as UserRole)} className="w-full bg-bg-base border border-border px-3 py-2.5 rounded-lg text-text-primary outline-none focus:border-accent text-[14px]" required>
                   {availableRoles.map((r) => <option key={r} value={r}>{r}</option>)}
                 </select>
               </div>
+              {showStoreSelector && (
+                <div>
+                  <label className="block text-[12px] text-text-secondary uppercase tracking-[1px] mb-1.5">Local *</label>
+                  <select value={form.store_id || ''} onChange={(e) => setForm({ ...form, store_id: e.target.value ? Number(e.target.value) : undefined })} className="w-full bg-bg-base border border-border px-3 py-2.5 rounded-lg text-text-primary outline-none focus:border-accent text-[14px]">
+                    <option value="">Sin local</option>
+                    {stores.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+                  </select>
+                </div>
+              )}
+              {storeLocked && (
+                <div>
+                  <label className="block text-[12px] text-text-secondary uppercase tracking-[1px] mb-1.5">Local</label>
+                  <select value={currentUser?.store_id || ''} disabled className="w-full bg-bg-base border border-border px-3 py-2.5 rounded-lg text-text-secondary outline-none text-[14px] opacity-60 cursor-not-allowed">
+                    <option value={currentUser?.store_id}>{stores.find(s => s.id === currentUser?.store_id)?.name || `Tienda #${currentUser?.store_id}`}</option>
+                  </select>
+                </div>
+              )}
             </div>
             <div className="flex gap-2">
               <button type="submit" disabled={submitting} className="bg-accent text-bg-base border-none px-4 py-2 rounded-lg font-semibold cursor-pointer text-[13px] disabled:opacity-50">
@@ -182,7 +214,7 @@ export default function UserManagement() {
             {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
               <button key={p} onClick={() => setPage(p)} className={`px-3 py-1.5 rounded cursor-pointer text-[12px] border ${p === page ? 'border-accent text-accent' : 'border-border text-text-primary bg-bg-base'}`}>{p}</button>
             ))}
-            <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="bg-bg-base border border-border text-text-primary px-3 py-1.5 rounded cursor-pointer text-[12px] disabled:opacity-50">&gt;</button>
+            <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="bg-bg-base border border-border text-text-primary px-3 py-2 rounded cursor-pointer text-[12px] disabled:opacity-50">&gt;</button>
           </div>
         )}
       </div>

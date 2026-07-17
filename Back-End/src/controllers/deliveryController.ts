@@ -13,7 +13,7 @@ export async function getDeliveryOrders(req: Request, res: Response) {
   const userId = (req as any).user?.sub
   const where: any = {
     store_id: storeId,
-    status: { [Op.in]: ['DONE', 'IN_TRANSIT'] },
+    status: { [Op.in]: ['IN_TRANSIT', 'DELIVERED'] },
   }
 
   if (userId) {

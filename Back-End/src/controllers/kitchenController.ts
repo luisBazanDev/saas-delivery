@@ -34,7 +34,7 @@ export async function markOrderReady(req: Request, res: Response) {
   const order = await Order.findOne({ where: { id: orderId, store_id: storeId } })
   if (!order) return res.status(404).json({ error: 'Order not found' })
 
-  const nextStatus = order.status === 'PENDING' ? 'IN_PROGRESS' : 'DONE'
+  const nextStatus = order.status === 'PENDING' ? 'IN_PROGRESS' : 'IN_TRANSIT'
   const updateData: any = { status: nextStatus }
 
   await order.update(updateData)
@@ -59,7 +59,7 @@ export async function cancelOrderReady(req: Request, res: Response) {
   const order = await Order.findOne({ where: { id: orderId, store_id: storeId } })
   if (!order) return res.status(404).json({ error: 'Order not found' })
 
-  if (order.status !== 'DONE') return res.status(400).json({ error: 'Order is not marked as done' })
+  if (order.status !== 'IN_TRANSIT') return res.status(400).json({ error: 'Order is not marked as ready' })
 
   if (!order.created_at) return res.status(400).json({ error: 'Order has no created_at' })
 

@@ -49,7 +49,7 @@ export async function getReportSummary(req: Request, res: Response) {
     Order.findAll({
       where: {
         store_id: storeId,
-        status: { [Op.in]: ['DELIVERED', 'DONE'] },
+        status: { [Op.in]: ['DELIVERED'] },
         created_at: { [Op.gte]: start, [Op.lte]: end },
       },
       attributes: [[fn('SUM', col('total_amount')), 'total_income']],
@@ -281,7 +281,7 @@ export async function exportBusinessReport(req: Request, res: Response) {
     Order.findAll({
       where: {
         store_id: storeId,
-        status: { [Op.in]: ['DELIVERED', 'DONE'] },
+        status: { [Op.in]: ['DELIVERED'] },
         created_at: { [Op.gte]: start, [Op.lte]: end },
       },
       attributes: [[fn('SUM', col('total_amount')), 'total_income']],

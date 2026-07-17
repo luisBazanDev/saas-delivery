@@ -17,7 +17,7 @@ export async function getDashboard(req: Request, res: Response) {
     Order.count({
       where: {
         store_id: storeId,
-        status: { [Op.in]: ['PENDING', 'IN_PROGRESS', 'DONE'] },
+        status: { [Op.in]: ['PENDING', 'IN_PROGRESS'] },
       },
     }),
 
@@ -31,7 +31,7 @@ export async function getDashboard(req: Request, res: Response) {
     Order.findAll({
       where: {
         store_id: storeId,
-        status: { [Op.in]: ['DELIVERED', 'DONE'] },
+        status: { [Op.in]: ['DELIVERED'] },
         created_at: { [Op.gte]: today, [Op.lt]: tomorrow },
       },
       attributes: [[fn('SUM', col('total_amount')), 'total_income']],

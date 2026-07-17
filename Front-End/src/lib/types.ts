@@ -1,6 +1,6 @@
 export type UserRole = 'ADMIN' | 'STORE_ADMIN' | 'STORE_MANAGER' | 'STORE_DELIVERY' | 'STORE_CHEF'
 
-export type OrderStatus = 'PENDING' | 'IN_PROGRESS' | 'DONE' | 'IN_TRANSIT' | 'DELIVERED'
+export type OrderStatus = 'PENDING' | 'IN_PROGRESS' | 'IN_TRANSIT' | 'DELIVERED'
 
 export interface Subscription {
   id: number

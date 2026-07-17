@@ -7,14 +7,14 @@ import {
   deleteOrder,
 } from '../controllers/orderController'
 import { authMiddleware } from '../middleware/authMiddleware'
-import { requireRole } from '../middleware/requireRole'
+import { requireAnyRole } from '../middleware/requireRole'
 
 const router = Router()
 
-router.get('/', authMiddleware, requireRole('STORE_ADMIN'), listOrders)
-router.post('/', authMiddleware, requireRole('STORE_ADMIN'), createOrder)
-router.get('/:id', authMiddleware, requireRole('STORE_ADMIN'), getOrder)
-router.put('/:id', authMiddleware, requireRole('STORE_ADMIN'), updateOrder)
-router.delete('/:id', authMiddleware, requireRole('STORE_ADMIN'), deleteOrder)
+router.get('/', authMiddleware, requireAnyRole(['STORE_ADMIN', 'STORE_MANAGER']), listOrders)
+router.post('/', authMiddleware, requireAnyRole(['STORE_ADMIN', 'STORE_MANAGER']), createOrder)
+router.get('/:id', authMiddleware, requireAnyRole(['STORE_ADMIN', 'STORE_MANAGER']), getOrder)
+router.put('/:id', authMiddleware, requireAnyRole(['STORE_ADMIN', 'STORE_MANAGER']), updateOrder)
+router.delete('/:id', authMiddleware, requireAnyRole(['STORE_ADMIN', 'STORE_MANAGER']), deleteOrder)
 
 export default router

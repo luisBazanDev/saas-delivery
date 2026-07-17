@@ -74,7 +74,6 @@ const roleConfig: Record<string, { name: string; menu: NavGroup[] }> = {
         items: [
           { id: 'dashboard', label: 'Dashboard', href: '/store/${storeId}', icon: <LayoutDashboard size={16} /> },
           { id: 'orders', label: 'Órdenes', href: '/store/${storeId}/orders', icon: <KanbanSquare size={16} /> },
-          { id: 'kitchen', label: 'Cocina', href: '/store/${storeId}/kitchen', icon: <ChefHat size={16} /> },
         ],
       },
     ],

@@ -25,8 +25,8 @@ export default function KitchenView({ storeId }: KitchenViewProps) {
   async function fetchOrders() {
     try {
       const res = await api.get<KitchenResponse>(`/stores/${storeId}/kitchen`)
-      const activeOrders = res.orders.filter((o) => o.status !== 'DONE')
-      const doneOrders = res.orders.filter((o) => o.status === 'DONE')
+      const activeOrders = res.orders.filter((o) => o.status !== 'IN_TRANSIT')
+      const doneOrders = res.orders.filter((o) => o.status === 'IN_TRANSIT')
 
       const now = Date.now()
       const fiveMinutesMs = 5 * 60 * 1000

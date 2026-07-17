@@ -8,13 +8,29 @@ export async function createStore(req: Request, res: Response) {
 }
 
 export async function list(req: Request, res: Response) {
-  const stores = await Store.findAll()
-  return res.status(200).json(stores)
+  const user = (req as any).user
+  if (user.role_name === 'ADMIN') {
+    const stores = await Store.findAll()
+    return res.status(200).json(stores)
+  }
+  if (user.store_id) {
+    const store = await Store.findByPk(user.store_id)
+    return res.status(200).json(store ? [store] : [])
+  }
+  return res.status(200).json([])
 }
 
 export async function listStores(req: Request, res: Response) {
-  const items = await Store.findAll()
-  return res.json(items)
+  const user = (req as any).user
+  if (user.role_name === 'ADMIN') {
+    const items = await Store.findAll()
+    return res.json(items)
+  }
+  if (user.store_id) {
+    const store = await Store.findByPk(user.store_id)
+    return res.json(store ? [store] : [])
+  }
+  return res.json([])
 }
 
 export async function getStore(req: Request, res: Response) {

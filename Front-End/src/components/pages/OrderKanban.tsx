@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { api } from '../../lib/http'
-import type { Order, KanbanResponse, Product } from '../../lib/types'
-import { Plus, FileText, Trash2, MapPin, Search, X, Minus, Plus as PlusIcon } from 'lucide-react'
+import type { Order, KanbanResponse, Product, Category } from '../../lib/types'
+import { Plus, FileText, Trash2, MapPin, Search, X, Minus, Plus as PlusIcon, Tag } from 'lucide-react'
 import AddressSearch from './AddressSearch'
 import StoreMap from './StoreMap'
 
@@ -22,6 +22,8 @@ export default function OrderKanban({ storeId }: OrderKanbanProps) {
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState({ customer_name: '', customer_phone: '', address: '', delivery_lat: undefined as number | undefined, delivery_lon: undefined as number | undefined })
   const [products, setProducts] = useState<Product[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
+  const [selectedCategory, setSelectedCategory] = useState<number | null>(null)
   const [cart, setCart] = useState<{ product: Product; quantity: number }[]>([])
   const [productSearch, setProductSearch] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -34,6 +36,7 @@ export default function OrderKanban({ storeId }: OrderKanbanProps) {
     return () => clearInterval(interval)
   }, [storeId])
   useEffect(() => { fetchProducts() }, [storeId])
+  useEffect(() => { fetchCategories() }, [storeId])
   useEffect(() => {
     api.get(`/stores/${storeId}`)
       .then((store: any) => {
@@ -61,6 +64,15 @@ export default function OrderKanban({ storeId }: OrderKanbanProps) {
       setProducts(res.filter(p => p.store_id === Number(storeId) && p.is_available))
     } catch {
       setProducts([])
+    }
+  }
+
+  async function fetchCategories() {
+    try {
+      const res = await api.get<Category[]>(`/stores/${storeId}/categories`)
+      setCategories(res)
+    } catch {
+      setCategories([])
     }
   }
 
@@ -126,10 +138,12 @@ export default function OrderKanban({ storeId }: OrderKanbanProps) {
     }).filter(item => item.quantity > 0))
   }
 
-  const filteredProducts = products.filter(p =>
-    p.name.toLowerCase().includes(productSearch.toLowerCase()) ||
-    (p.description && p.description.toLowerCase().includes(productSearch.toLowerCase()))
-  )
+  const filteredProducts = products.filter(p => {
+    const matchesSearch = p.name.toLowerCase().includes(productSearch.toLowerCase()) ||
+      (p.description && p.description.toLowerCase().includes(productSearch.toLowerCase()))
+    const matchesCategory = selectedCategory === null || p.category_id === selectedCategory
+    return matchesSearch && matchesCategory
+  })
 
   const totalAmount = cart.reduce((sum, item) => sum + Number(item.product.price) * item.quantity, 0)
 
@@ -251,6 +265,36 @@ export default function OrderKanban({ storeId }: OrderKanbanProps) {
 
             <div className="flex flex-1 overflow-hidden">
               <div className="w-1/2 border-r border-border flex flex-col">
+                {categories.length > 0 && (
+                  <div className="px-4 pt-3 pb-2 border-b border-border">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <button
+                        onClick={() => setSelectedCategory(null)}
+                        className={`px-2.5 py-1 rounded-full text-[11px] font-medium border cursor-pointer transition-colors ${
+                          selectedCategory === null
+                            ? 'bg-accent text-bg-base border-accent'
+                            : 'bg-transparent border-border text-text-secondary hover:border-accent hover:text-accent'
+                        }`}
+                      >
+                        Todos
+                      </button>
+                      {categories.map(cat => (
+                        <button
+                          key={cat.id}
+                          onClick={() => setSelectedCategory(cat.id)}
+                          className={`px-2.5 py-1 rounded-full text-[11px] font-medium border cursor-pointer transition-colors flex items-center gap-1 ${
+                            selectedCategory === cat.id
+                              ? 'bg-accent text-bg-base border-accent'
+                              : 'bg-transparent border-border text-text-secondary hover:border-accent hover:text-accent'
+                          }`}
+                        >
+                          <Tag size={10} />
+                          {cat.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 <div className="p-4 border-b border-border">
                   <div className="relative">
                     <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary" />

@@ -9,6 +9,7 @@ import {
 
 import { sequelize } from "../repositories"
 import { Store } from "./store.model"
+import { Category } from "./category.model"
 
 export class Product extends Model<
   InferAttributes<Product>,
@@ -17,6 +18,8 @@ export class Product extends Model<
   declare id: CreationOptional<number>
 
   declare store_id: ForeignKey<Store["id"]>
+
+  declare category_id: ForeignKey<Category["id"]> | null
 
   declare name: string
 
@@ -44,6 +47,15 @@ Product.init(
       allowNull: false,
       references: {
         model: Store,
+        key: 'id'
+      }
+    },
+
+    category_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: Category,
         key: 'id'
       }
     },

@@ -4,6 +4,7 @@ import { Product } from "./product.model"
 import { Order } from "./order.model"
 import { OrderProduct } from "./order-product.model"
 import { Subscription } from "./subscription.model"
+import { Category } from "./category.model"
 
 Subscription.hasMany(Store, {
     foreignKey: "subscription_id"
@@ -27,6 +28,22 @@ Store.hasMany(Product, {
 
 Product.belongsTo(Store, {
     foreignKey: "store_id"
+})
+
+Store.hasMany(Category, {
+    foreignKey: "store_id"
+})
+
+Category.belongsTo(Store, {
+    foreignKey: "store_id"
+})
+
+Category.hasMany(Product, {
+    foreignKey: "category_id"
+})
+
+Product.belongsTo(Category, {
+    foreignKey: "category_id"
 })
 
 Store.hasMany(Order, {

@@ -40,15 +40,25 @@ export interface User {
   Store?: Store
 }
 
+export interface Category {
+  id: number
+  store_id: number
+  name: string
+  is_active: boolean
+  created_at?: string
+}
+
 export interface Product {
   id: number
   store_id: number
+  category_id?: number
   name: string
   price: number
   is_available: boolean
   is_archived: boolean
   description?: string
   stock?: number
+  Category?: Category
 }
 
 export interface OrderProduct {

@@ -3,10 +3,10 @@ import { getKitchenOrders, markOrderReady, cancelOrderReady } from '../controlle
 import { authMiddleware } from '../middleware/authMiddleware'
 import { requireAnyRole } from '../middleware/requireRole'
 
-const router = Router()
+const router = Router({ mergeParams: true })
 
 router.get('/', authMiddleware, requireAnyRole(['ADMIN', 'STORE_ADMIN', 'STORE_MANAGER', 'STORE_CHEF']), getKitchenOrders)
-router.put('/:id/ready', authMiddleware, requireAnyRole(['ADMIN', 'STORE_ADMIN', 'STORE_MANAGER', 'STORE_CHEF']), markOrderReady)
-router.put('/:id/unready', authMiddleware, requireAnyRole(['ADMIN', 'STORE_ADMIN', 'STORE_MANAGER', 'STORE_CHEF']), cancelOrderReady)
+router.put('/:orderId/ready', authMiddleware, requireAnyRole(['ADMIN', 'STORE_ADMIN', 'STORE_MANAGER', 'STORE_CHEF']), markOrderReady)
+router.put('/:orderId/unready', authMiddleware, requireAnyRole(['ADMIN', 'STORE_ADMIN', 'STORE_MANAGER', 'STORE_CHEF']), cancelOrderReady)
 
 export default router

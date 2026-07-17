@@ -34,14 +34,18 @@ export async function listStores(req: Request, res: Response) {
 }
 
 export async function getStore(req: Request, res: Response) {
-  const id = Number(req.params.id)
+  const user = (req as any).user
+  const id = user.role_name === 'ADMIN' ? Number(req.params.id) : user.store_id
+  if (!id) return res.status(400).json({ error: 'store_id is required' })
   const item = await Store.findByPk(id)
   if (!item) return res.status(404).json({ error: 'not found' })
   return res.json(item)
 }
 
 export async function updateStore(req: Request, res: Response) {
-  const id = Number(req.params.id)
+  const user = (req as any).user
+  const id = user.role_name === 'ADMIN' ? Number(req.params.id) : user.store_id
+  if (!id) return res.status(400).json({ error: 'store_id is required' })
   const item = await Store.findByPk(id)
   if (!item) return res.status(404).json({ error: 'not found' })
   await item.update(req.body)
@@ -49,7 +53,9 @@ export async function updateStore(req: Request, res: Response) {
 }
 
 export async function deleteStore(req: Request, res: Response) {
-  const id = Number(req.params.id)
+  const user = (req as any).user
+  const id = user.role_name === 'ADMIN' ? Number(req.params.id) : user.store_id
+  if (!id) return res.status(400).json({ error: 'store_id is required' })
   const item = await Store.findByPk(id)
   if (!item) return res.status(404).json({ error: 'not found' })
   await item.destroy()

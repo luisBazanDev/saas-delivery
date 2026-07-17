@@ -31,7 +31,8 @@ function getDateRange(period: string): { start: Date; end: Date } {
 }
 
 export async function getReportSummary(req: Request, res: Response) {
-  const storeId = Number(req.params.id)
+  const user = (req as any).user
+  const storeId = user.role_name === 'ADMIN' ? Number(req.params.id) : user.store_id
   if (!storeId) return res.status(400).json({ error: 'store_id is required' })
 
   const period = String(req.query.period || 'week')
@@ -141,7 +142,8 @@ export async function getReportSummary(req: Request, res: Response) {
 }
 
 export async function exportMovements(req: Request, res: Response) {
-  const storeId = Number(req.params.id)
+  const user = (req as any).user
+  const storeId = user.role_name === 'ADMIN' ? Number(req.params.id) : user.store_id
   if (!storeId) return res.status(400).json({ error: 'store_id is required' })
 
   const period = String(req.query.period || 'week')
@@ -261,7 +263,8 @@ function exportHTML(res: Response, rows: Record<string, any>[], storeId: number,
 }
 
 export async function exportBusinessReport(req: Request, res: Response) {
-  const storeId = Number(req.params.id)
+  const user = (req as any).user
+  const storeId = user.role_name === 'ADMIN' ? Number(req.params.id) : user.store_id
   if (!storeId) return res.status(400).json({ error: 'store_id is required' })
 
   const period = String(req.query.period || 'week')

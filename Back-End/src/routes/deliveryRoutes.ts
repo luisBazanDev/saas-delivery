@@ -9,12 +9,12 @@ import {
 import { authMiddleware } from '../middleware/authMiddleware'
 import { requireAnyRole } from '../middleware/requireRole'
 
-const router = Router()
+const router = Router({ mergeParams: true })
 
 router.get('/', authMiddleware, requireAnyRole(['ADMIN', 'STORE_ADMIN', 'STORE_MANAGER', 'STORE_DELIVERY']), getDeliveryOrders)
 router.get('/active', authMiddleware, requireAnyRole(['ADMIN', 'STORE_ADMIN', 'STORE_MANAGER']), getActiveDeliveries)
-router.get('/:id/map', authMiddleware, requireAnyRole(['ADMIN', 'STORE_ADMIN', 'STORE_MANAGER', 'STORE_DELIVERY']), getOrderWithMap)
-router.put('/:id/assign', authMiddleware, requireAnyRole(['ADMIN', 'STORE_ADMIN', 'STORE_MANAGER']), assignDelivery)
-router.put('/:id/status', authMiddleware, requireAnyRole(['ADMIN', 'STORE_ADMIN', 'STORE_MANAGER', 'STORE_DELIVERY']), updateDeliveryStatus)
+router.get('/:orderId/map', authMiddleware, requireAnyRole(['ADMIN', 'STORE_ADMIN', 'STORE_MANAGER', 'STORE_DELIVERY']), getOrderWithMap)
+router.put('/:orderId/assign', authMiddleware, requireAnyRole(['ADMIN', 'STORE_ADMIN', 'STORE_MANAGER']), assignDelivery)
+router.put('/:orderId/status', authMiddleware, requireAnyRole(['ADMIN', 'STORE_ADMIN', 'STORE_MANAGER', 'STORE_DELIVERY']), updateDeliveryStatus)
 
 export default router

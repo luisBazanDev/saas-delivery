@@ -10,7 +10,8 @@ function generateOrderCode(): string {
 }
 
 export async function listOrders(req: Request, res: Response) {
-  const storeId = Number(req.params.id)
+  const user = (req as any).user
+  const storeId = user.role_name === 'ADMIN' ? Number(req.params.id) : user.store_id
   if (!storeId) return res.status(400).json({ error: 'store_id is required' })
 
   // Peru timezone is UTC-5
@@ -64,7 +65,8 @@ export async function createOrder(req: Request, res: Response) {
   console.log('[ORDER] req.path:', req.path)
   console.log('[ORDER] req.body:', JSON.stringify(req.body))
   
-  const storeId = Number(req.params.id) || Number(req.body.store_id)
+  const user = (req as any).user
+  const storeId = user.role_name === 'ADMIN' ? Number(req.params.id) || Number(req.body.store_id) : user.store_id
   console.log('[ORDER] storeId:', storeId)
   if (!storeId || isNaN(storeId)) return res.status(400).json({ error: 'store_id is required' })
 
@@ -110,7 +112,8 @@ export async function updateOrderStatus(req: Request, res: Response) {
   console.log('[STATUS] req.baseUrl:', req.baseUrl)
   console.log('[STATUS] req.path:', req.path)
   
-  const storeId = Number(req.params.id)
+  const user = (req as any).user
+  const storeId = user.role_name === 'ADMIN' ? Number(req.params.id) : user.store_id
   const orderId = Number(req.params.orderId)
   console.log('[STATUS] storeId:', storeId, 'orderId:', orderId)
   
@@ -141,7 +144,8 @@ export async function updateOrderStatus(req: Request, res: Response) {
 }
 
 export async function deleteOrder(req: Request, res: Response) {
-  const storeId = Number(req.params.id)
+  const user = (req as any).user
+  const storeId = user.role_name === 'ADMIN' ? Number(req.params.id) : user.store_id
   const orderId = Number(req.params.orderId)
 
   const order = await Order.findOne({ where: { id: orderId, store_id: storeId } })

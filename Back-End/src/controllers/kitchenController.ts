@@ -5,7 +5,8 @@ import { Product } from '../models/product.model'
 import { Op } from 'sequelize'
 
 export async function getKitchenOrders(req: Request, res: Response) {
-  const storeId = Number(req.params.id)
+  const user = (req as any).user
+  const storeId = user.role_name === 'ADMIN' ? Number(req.params.id) : user.store_id
   if (!storeId) return res.status(400).json({ error: 'store_id is required' })
 
   const orders = await Order.findAll({
@@ -26,8 +27,9 @@ export async function getKitchenOrders(req: Request, res: Response) {
 }
 
 export async function markOrderReady(req: Request, res: Response) {
-  const storeId = Number(req.params.id)
-  const orderId = Number(req.params.id)
+  const user = (req as any).user
+  const storeId = user.role_name === 'ADMIN' ? Number(req.params.id) : user.store_id
+  const orderId = Number(req.params.orderId)
 
   const order = await Order.findOne({ where: { id: orderId, store_id: storeId } })
   if (!order) return res.status(404).json({ error: 'Order not found' })
@@ -50,8 +52,9 @@ export async function markOrderReady(req: Request, res: Response) {
 }
 
 export async function cancelOrderReady(req: Request, res: Response) {
-  const storeId = Number(req.params.id)
-  const orderId = Number(req.params.id)
+  const user = (req as any).user
+  const storeId = user.role_name === 'ADMIN' ? Number(req.params.id) : user.store_id
+  const orderId = Number(req.params.orderId)
 
   const order = await Order.findOne({ where: { id: orderId, store_id: storeId } })
   if (!order) return res.status(404).json({ error: 'Order not found' })

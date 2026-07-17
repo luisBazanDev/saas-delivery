@@ -6,7 +6,8 @@ import { Product } from '../models/product.model'
 import { Op } from 'sequelize'
 
 export async function getDeliveryOrders(req: Request, res: Response) {
-  const storeId = Number(req.params.id)
+  const user = (req as any).user
+  const storeId = user.role_name === 'ADMIN' ? Number(req.params.id) : user.store_id
   if (!storeId) return res.status(400).json({ error: 'store_id is required' })
 
   const userId = (req as any).user?.sub
@@ -35,8 +36,9 @@ export async function getDeliveryOrders(req: Request, res: Response) {
 }
 
 export async function getOrderWithMap(req: Request, res: Response) {
-  const storeId = Number(req.params.id)
-  const orderId = Number(req.params.id)
+  const user = (req as any).user
+  const storeId = user.role_name === 'ADMIN' ? Number(req.params.id) : user.store_id
+  const orderId = Number(req.params.orderId)
 
   const order = await Order.findOne({
     where: { id: orderId, store_id: storeId },
@@ -60,8 +62,9 @@ export async function getOrderWithMap(req: Request, res: Response) {
 }
 
 export async function assignDelivery(req: Request, res: Response) {
-  const storeId = Number(req.params.id)
-  const orderId = Number(req.params.id)
+  const user = (req as any).user
+  const storeId = user.role_name === 'ADMIN' ? Number(req.params.id) : user.store_id
+  const orderId = Number(req.params.orderId)
   const { delivery_user_id } = req.body
 
   if (!delivery_user_id) return res.status(400).json({ error: 'delivery_user_id is required' })
@@ -86,8 +89,9 @@ export async function assignDelivery(req: Request, res: Response) {
 }
 
 export async function updateDeliveryStatus(req: Request, res: Response) {
-  const storeId = Number(req.params.id)
-  const orderId = Number(req.params.id)
+  const user = (req as any).user
+  const storeId = user.role_name === 'ADMIN' ? Number(req.params.id) : user.store_id
+  const orderId = Number(req.params.orderId)
   const { status } = req.body
 
   if (!status) return res.status(400).json({ error: 'status is required' })
@@ -101,7 +105,8 @@ export async function updateDeliveryStatus(req: Request, res: Response) {
 }
 
 export async function getActiveDeliveries(req: Request, res: Response) {
-  const storeId = Number(req.params.id)
+  const user = (req as any).user
+  const storeId = user.role_name === 'ADMIN' ? Number(req.params.id) : user.store_id
   if (!storeId) return res.status(400).json({ error: 'store_id is required' })
 
   const deliveries = await Order.findAll({

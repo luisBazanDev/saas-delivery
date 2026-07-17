@@ -7,7 +7,7 @@ import {
 import { authMiddleware } from '../middleware/authMiddleware'
 import { requireAnyRole } from '../middleware/requireRole'
 
-const router = Router()
+const router = Router({ mergeParams: true })
 
 router.get('/summary', authMiddleware, requireAnyRole(['ADMIN', 'STORE_ADMIN', 'STORE_MANAGER']), getReportSummary)
 router.get('/export', authMiddleware, requireAnyRole(['ADMIN', 'STORE_ADMIN', 'STORE_MANAGER']), exportMovements)

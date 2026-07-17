@@ -4,7 +4,8 @@ import { User } from '../models/user.model'
 import { Op, fn, col } from 'sequelize'
 
 export async function getDashboard(req: Request, res: Response) {
-  const storeId = Number(req.params.id)
+  const user = (req as any).user
+  const storeId = user.role_name === 'ADMIN' ? Number(req.params.id) : user.store_id
   if (!storeId) return res.status(400).json({ error: 'store_id is required' })
 
   const today = new Date()

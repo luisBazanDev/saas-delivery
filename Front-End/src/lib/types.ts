@@ -82,6 +82,8 @@ export interface Order {
     id: number
     name: string
   }
+  isMine?: boolean
+  isAvailable?: boolean
 }
 
 export interface AuthResponse {

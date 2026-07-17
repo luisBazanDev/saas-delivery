@@ -29,6 +29,10 @@ export default function OrderKanban({ storeId }: OrderKanbanProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => { fetchOrders() }, [storeId])
+  useEffect(() => {
+    const interval = setInterval(fetchOrders, 10000)
+    return () => clearInterval(interval)
+  }, [storeId])
   useEffect(() => { fetchProducts() }, [storeId])
   useEffect(() => {
     api.get(`/stores/${storeId}`)

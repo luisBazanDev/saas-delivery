@@ -11,17 +11,12 @@ export async function getDeliveryOrders(req: Request, res: Response) {
   if (!storeId) return res.status(400).json({ error: 'store_id is required' })
 
   const userId = (req as any).user?.sub
-  const where: any = {
-    store_id: storeId,
-    status: { [Op.in]: ['IN_TRANSIT', 'DELIVERED'] },
-  }
-
-  if (userId) {
-    where.delivery_user_id = userId
-  }
 
   const orders = await Order.findAll({
-    where,
+    where: {
+      store_id: storeId,
+      status: { [Op.in]: ['IN_TRANSIT'] },
+    },
     include: [
       {
         model: OrderProduct,
@@ -32,7 +27,13 @@ export async function getDeliveryOrders(req: Request, res: Response) {
     order: [['created_at', 'DESC']],
   })
 
-  return res.json({ orders })
+  const ordersWithMeta = orders.map((o: any) => ({
+    ...o.toJSON(),
+    isMine: o.delivery_user_id === userId,
+    isAvailable: o.delivery_user_id === null,
+  }))
+
+  return res.json({ orders: ordersWithMeta })
 }
 
 export async function getOrderWithMap(req: Request, res: Response) {
@@ -78,6 +79,27 @@ export async function assignDelivery(req: Request, res: Response) {
   if (!deliveryUser) return res.status(404).json({ error: 'Delivery user not found or not available' })
 
   await order.update({ delivery_user_id, status: 'IN_TRANSIT' })
+
+  const updated = await Order.findByPk(orderId, {
+    include: [
+      { model: User, as: 'deliveryUser', attributes: ['id', 'name'] },
+    ],
+  })
+
+  return res.json(updated)
+}
+
+export async function claimDelivery(req: Request, res: Response) {
+  const user = (req as any).user
+  const storeId = user.role_name === 'ADMIN' ? Number(req.params.id) : user.store_id
+  const orderId = Number(req.params.orderId)
+  const userId = user.sub
+
+  const order = await Order.findOne({ where: { id: orderId, store_id: storeId, status: 'IN_TRANSIT' } })
+  if (!order) return res.status(404).json({ error: 'Order not found' })
+  if (order.delivery_user_id != null) return res.status(409).json({ error: 'Order already assigned to another delivery user' })
+
+  await order.update({ delivery_user_id: userId })
 
   const updated = await Order.findByPk(orderId, {
     include: [
